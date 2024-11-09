@@ -1,11 +1,114 @@
 "use client";
-import { CheckCircle, Paperclip } from "lucide-react";
-import React from "react";
+import { CheckCircle } from "lucide-react";
+import React, { useEffect, useState } from "react";
 import LawFirmLogos from "../CompanyNames";
+import Chatbot from "react-chatbot-kit";
+import "react-chatbot-kit/build/main.css";
+import config from "../ChatbotFiles/config";
+import MessageParser from "../ChatbotFiles/MessageParser";
+import ActionProvider from "../ChatbotFiles/ActionProvider";
+import { MessageCircle } from "lucide-react"; // Importing icons
 
 const WebsiteHeroSection = () => {
+  const [showChat, setShowChat] = useState(true);
+  const [loading, setLoading] = useState(true);
+
+  // Effect to control loading animation
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 2000); // 2 seconds delay
+    return () => clearTimeout(timer);
+  }, []);
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 py-20 px-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 py-20 px-8 relative">
+      {/* Fixed Chatbot at Bottom Right */}
+      <div className="fixed bottom-4 right-4 z-50">
+        {loading ? (
+          // Loading animation with bouncing dots
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: "60px",
+              height: "60px",
+              position: "fixed",
+              bottom: "20px",
+              right: "20px",
+            }}
+          >
+            <div className="dot" style={{ animationDelay: "0s" }}>
+              •
+            </div>
+            <div className="dot" style={{ animationDelay: "0.2s" }}>
+              •
+            </div>
+            <div className="dot" style={{ animationDelay: "0.4s" }}>
+              •
+            </div>
+
+            <style jsx>{`
+              .dot {
+                font-size: 30px;
+                color: #e0bc2d;
+                animation: bounce 0.6s infinite alternate;
+                padding: 0 2px;
+              }
+              @keyframes bounce {
+                from {
+                  transform: translateY(0);
+                }
+                to {
+                  transform: translateY(-10px);
+                }
+              }
+            `}</style>
+          </div>
+        ) : (
+          <>
+            {showChat && (
+              <Chatbot
+                config={{
+                  ...config,
+                  customComponents: {
+                    header: () => (
+                      <config.customComponents.header
+                        setShowChat={setShowChat}
+                      />
+                    ),
+                  },
+                }}
+                actionProvider={ActionProvider}
+                messageParser={MessageParser}
+              />
+            )}
+
+            {!showChat && (
+              <button
+                onClick={() => setShowChat((prev) => !prev)}
+                style={{
+                  position: "fixed",
+                  bottom: "20px",
+                  right: "20px",
+                  backgroundColor: "#e0bc2d",
+                  color: "white",
+                  borderRadius: "50%",
+                  width: "60px",
+                  height: "60px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  border: "none",
+                  boxShadow: "0 4px 8px rgba(0, 0, 0, 0.3)",
+                  cursor: "pointer",
+                  zIndex: 1001,
+                }}
+              >
+                <MessageCircle size={28} />
+              </button>
+            )}
+          </>
+        )}
+      </div>
       {/* Left Section: Text */}
       <div className="flex flex-col justify-between mb-8 md:mb-0 md:pr-8">
         <div>

@@ -16,13 +16,13 @@ const Navbar = () => {
         {/* Logo and Title */}
         <div className="flex items-center space-x-4">
           <img
-            src="/path/to/logo.png"
+            src="/logo.jpeg"
             alt="Logo"
             className="w-12 h-12 rounded-full shadow-md"
           />
           <div className="text-center lg:text-left">
             <h1 className="text-3xl font-semibold text-gray-700 tracking-wide">
-              Our FirmName
+              Justice Advocates
             </h1>
             <p className="text-md text-gray-500 italic">
               Turning today's goals into a lasting impact.
