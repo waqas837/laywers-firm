@@ -5,7 +5,7 @@ import LawFirmLogos from "../CompanyNames";
 
 const WebsiteHeroSection = () => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 py-20 px-8 bg-gray-50">
+    <div className="grid grid-cols-1 md:grid-cols-2 py-20 px-8">
       {/* Left Section: Text */}
       <div className="flex flex-col justify-between mb-8 md:mb-0 md:pr-8">
         <div>
