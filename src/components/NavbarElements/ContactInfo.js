@@ -14,7 +14,7 @@ const ContactInfo = () => {
               href="tel:+123232123"
               className="text-yellow-700 hover:text-yellow-500 hover:underline transition-all duration-300"
             >
-              <span className="text-center">111.222.333</span>
+              <span className="text-center">239-799-0305</span>
             </a>
           </p>
         </div>
