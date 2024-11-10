@@ -1,42 +1,59 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { ChevronDown, Menu, X } from "lucide-react";
 import ContactInfo from "../NavbarElements/ContactInfo";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const clickHandler = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+  const buttonRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target) &&
+        buttonRef.current &&
+        !buttonRef.current.contains(event.target)
+      ) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
     <header className="bg-white shadow-md">
       {/* Top Section with Logo and Contact */}
       <div className="flex flex-col lg:flex-row justify-between items-center py-4 px-8 lg:px-16">
-        {/* Logo and Title */}
         <div className="flex items-center space-x-4">
           <img
-            src="/logo.jpeg"
+            src="/logo.webp"
             alt="Logo"
             className="w-12 h-12 rounded-full shadow-md"
           />
           <div className="text-center lg:text-left">
             <h1 className="text-3xl font-semibold text-gray-700 tracking-wide">
-              Justice Advocates
+              ¿Hablamos Español?
             </h1>
             <p className="text-md text-gray-500 italic">
               Turning today's goals into a lasting impact.
             </p>
           </div>
         </div>
-
-        {/* Contact Information */}
         <ContactInfo />
       </div>
-      {/* Navigation Links */}
-      <nav className="bg-yellow-500 p-2 text-blue-800">
-        {/* Hamburger Menu for Mobile */}
-        <button className="lg:hidden text-white p-2" onClick={clickHandler}>
+
+      {/* Navigation */}
+      <nav className="bg-yellow-500 p-2 text-blue-800 relative">
+        {/* Mobile Menu Button */}
+        <button
+          className="lg:hidden text-white p-2"
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+        >
           {isMenuOpen ? (
             <X className="w-6 h-6" />
           ) : (
@@ -48,31 +65,129 @@ const Navbar = () => {
         <div
           className={`${
             isMenuOpen ? "block" : "hidden"
-          } absolute top-0 left-0 w-full bg-yellow-500 text-blue-800 lg:hidden transition-all duration-300 ease-in-out z-50`}
+          } lg:hidden absolute top-full left-0 w-full bg-yellow-500 z-50`}
         >
           <ul className="flex flex-col items-center py-4 space-y-4">
-            <li className="group">
+            <li className="w-48">
               <a
                 href="#"
-                className="text-lg font-semibold hover:bg-yellow-600 px-4 py-2 rounded-md transition duration-200"
+                className="block text-lg font-semibold hover:bg-yellow-600 px-4 py-2 rounded-md transition duration-200"
               >
                 Home
               </a>
             </li>
-            <li className="group relative">
-              <a
-                href="#"
-                className="text-lg font-semibold hover:bg-yellow-600 px-4 py-2 rounded-md transition duration-200 flex items-center"
+            <li className="relative w-48">
+              <button
+                ref={buttonRef}
+                className="w-full text-lg font-semibold hover:bg-yellow-600 px-4 py-2 rounded-md flex items-center justify-between transition duration-200"
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
               >
                 Our Firm
-                <ChevronDown className="ml-1 w-4 h-4" />
+                <ChevronDown className="w-4 h-4" />
+              </button>
+              {isDropdownOpen && (
+                <ul
+                  ref={dropdownRef}
+                  className="bg-white rounded-md shadow-lg mt-2 w-full overflow-hidden z-[999]"
+                >
+                  <li>
+                    <a
+                      href="#"
+                      className="block px-4 py-2 hover:bg-yellow-500 hover:text-white transition-all duration-200"
+                    >
+                      Our Team
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#"
+                      className="block px-4 py-2 hover:bg-yellow-500 hover:text-white transition-all duration-200"
+                    >
+                      History
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#"
+                      className="block px-4 py-2 hover:bg-yellow-500 hover:text-white transition-all duration-200"
+                    >
+                      Values
+                    </a>
+                  </li>
+                </ul>
+              )}
+            </li>
+            <li className="w-48">
+              <a
+                href="#"
+                className="block text-lg font-semibold hover:bg-yellow-600 px-4 py-2 rounded-md transition duration-200"
+              >
+                Estate Planning
               </a>
-              {/* Dropdown */}
-              <ul className="absolute left-0 hidden group-hover:block bg-white text-gray-800 mt-2 rounded-md shadow-lg py-2 w-48 space-y-2 opacity-0 transform scale-95 transition-all duration-300 ease-in-out group-hover:opacity-100 group-hover:scale-100">
+            </li>
+            <li className="w-48">
+              <a
+                href="#"
+                className="block text-lg font-semibold hover:bg-yellow-600 px-4 py-2 rounded-md transition duration-200"
+              >
+                Probate Law
+              </a>
+            </li>
+            <li className="w-48">
+              <a
+                href="#"
+                className="block text-lg font-semibold hover:bg-yellow-600 px-4 py-2 rounded-md transition duration-200"
+              >
+                Real Estate Law
+              </a>
+            </li>
+            <li className="w-48">
+              <a
+                href="#"
+                className="block text-lg font-semibold hover:bg-yellow-600 px-4 py-2 rounded-md transition duration-200"
+              >
+                Our Areas
+              </a>
+            </li>
+            <li className="w-48">
+              <a
+                href="#"
+                className="block text-lg font-semibold hover:bg-yellow-600 px-4 py-2 rounded-md transition duration-200"
+              >
+                Articles
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        {/* Desktop Menu */}
+        <ul className="hidden lg:flex justify-start space-x-6 py-3 px-16">
+          <li>
+            <a
+              href="#"
+              className="hover:bg-yellow-600 px-3 py-2 rounded-md transition duration-200"
+            >
+              Home
+            </a>
+          </li>
+          <li className="relative">
+            <button
+              ref={buttonRef}
+              className="hover:bg-yellow-600 px-3 py-2 rounded-md flex items-center transition duration-200"
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            >
+              Our Firm
+              <ChevronDown className="ml-1 w-4 h-4" />
+            </button>
+            {isDropdownOpen && (
+              <ul
+                ref={dropdownRef}
+                className="absolute left-0 top-full bg-white rounded-md shadow-lg mt-2 w-48 overflow-hidden"
+              >
                 <li>
                   <a
                     href="#"
-                    className="block px-4 py-2 hover:bg-gray-200 transition duration-200"
+                    className="block px-4 py-2 hover:bg-yellow-500 hover:text-white transition-all duration-200"
                   >
                     Our Team
                   </a>
@@ -80,7 +195,7 @@ const Navbar = () => {
                 <li>
                   <a
                     href="#"
-                    className="block px-4 py-2 hover:bg-gray-200 transition duration-200"
+                    className="block px-4 py-2 hover:bg-yellow-500 hover:text-white transition-all duration-200"
                   >
                     History
                   </a>
@@ -88,145 +203,50 @@ const Navbar = () => {
                 <li>
                   <a
                     href="#"
-                    className="block px-4 py-2 hover:bg-gray-200 transition duration-200"
+                    className="block px-4 py-2 hover:bg-yellow-500 hover:text-white transition-all duration-200"
                   >
                     Values
                   </a>
                 </li>
               </ul>
-            </li>
-
-            <li className="group">
-              <a
-                href="#"
-                className="text-lg font-semibold hover:bg-yellow-600 px-4 py-2 rounded-md transition duration-200"
-              >
-                Estate Planning
-              </a>
-            </li>
-            <li className="group">
-              <a
-                href="#"
-                className="text-lg font-semibold hover:bg-yellow-600 px-4 py-2 rounded-md transition duration-200"
-              >
-                Probate Law
-              </a>
-            </li>
-            <li className="group">
-              <a
-                href="#"
-                className="text-lg font-semibold hover:bg-yellow-600 px-4 py-2 rounded-md transition duration-200"
-              >
-                Real Estate Law
-              </a>
-            </li>
-            <li className="group">
-              <a
-                href="#"
-                className="text-lg font-semibold hover:bg-yellow-600 px-4 py-2 rounded-md transition duration-200"
-              >
-                Our Areas
-              </a>
-            </li>
-            <li className="group">
-              <a
-                href="#"
-                className="text-lg font-semibold hover:bg-yellow-600 px-4 py-2 rounded-md transition duration-200"
-              >
-                Articles + Blog
-              </a>
-            </li>
-          </ul>
-        </div>
-
-        {/* Desktop Menu */}
-        <ul className="lg:flex hidden flex-wrap justify-center lg:justify-start space-x-6 py-3 lg:px-16 relative">
-          {/* Main Menu Links */}
-          <li className="relative group">
-            <a
-              href="#"
-              className="hover:bg-yellow-600 text-blue-800 transition duration-200 ease-in-out flex items-center px-3 py-2 rounded-md"
-            >
-              Home
-            </a>
+            )}
           </li>
-
-          <li className="relative group">
+          <li>
             <a
               href="#"
-              className="hover:bg-yellow-600 text-blue-800 transition duration-200 ease-in-out flex items-center px-3 py-2 rounded-md"
-            >
-              Our Firm
-              <ChevronDown className="ml-1 w-4 h-4" />
-            </a>
-            {/* Dropdown */}
-            <ul className="absolute left-0 hidden group-hover:block bg-white text-gray-800 mt-2 rounded-md shadow-lg py-2 w-48 space-y-2 opacity-0 transform scale-95 transition-all duration-300 ease-in-out group-hover:opacity-100 group-hover:scale-100">
-              <li>
-                <a
-                  href="#"
-                  className="block px-4 py-2 hover:bg-gray-200 transition duration-200"
-                >
-                  Our Team
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="block px-4 py-2 hover:bg-gray-200 transition duration-200"
-                >
-                  History
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="block px-4 py-2 hover:bg-gray-200 transition duration-200"
-                >
-                  Values
-                </a>
-              </li>
-            </ul>
-          </li>
-
-          <li className="relative group">
-            <a
-              href="#"
-              className="hover:bg-yellow-600 text-blue-800 transition duration-200 ease-in-out flex items-center px-3 py-2 rounded-md"
+              className="hover:bg-yellow-600 px-3 py-2 rounded-md transition duration-200"
             >
               Estate Planning
             </a>
           </li>
-
-          <li className="relative group">
+          <li>
             <a
               href="#"
-              className="hover:bg-yellow-600 text-blue-800 transition duration-200 ease-in-out flex items-center px-3 py-2 rounded-md"
+              className="hover:bg-yellow-600 px-3 py-2 rounded-md transition duration-200"
             >
               Probate Law
             </a>
           </li>
-
-          <li className="relative group">
+          <li>
             <a
               href="#"
-              className="hover:bg-yellow-600 text-blue-800 transition duration-200 ease-in-out flex items-center px-3 py-2 rounded-md"
+              className="hover:bg-yellow-600 px-3 py-2 rounded-md transition duration-200"
             >
               Real Estate Law
             </a>
           </li>
-
-          <li className="relative group">
+          <li>
             <a
               href="#"
-              className="hover:bg-yellow-600 text-blue-800 transition duration-200 ease-in-out flex items-center px-3 py-2 rounded-md"
+              className="hover:bg-yellow-600 px-3 py-2 rounded-md transition duration-200"
             >
               Our Areas
             </a>
           </li>
-          <li className="relative group">
+          <li>
             <a
               href="#"
-              className="hover:bg-yellow-600 text-blue-800 transition duration-200 ease-in-out flex items-center px-3 py-2 rounded-md"
+              className="hover:bg-yellow-600 px-3 py-2 rounded-md transition duration-200"
             >
               Articles
             </a>

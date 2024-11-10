@@ -79,7 +79,7 @@ const Carousel = () => {
         {/* Left Arrow Navigation */}
         <button
           onClick={prevSlide}
-          className="absolute left-4 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-opacity-60 hover:bg-opacity-80 focus:outline-none z-10"
+          className="absolute left-4 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-opacity-60 hover:bg-opacity-80 focus:outline-none "
           tabIndex={0}
         >
           <ChevronLeft className="h-6 w-6" />
@@ -87,7 +87,7 @@ const Carousel = () => {
         {/* Right Arrow Navigation */}
         <button
           onClick={nextSlide}
-          className="absolute right-4 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-opacity-60 hover:bg-opacity-80 focus:outline-none z-10"
+          className="absolute right-4 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-opacity-60 hover:bg-opacity-80 focus:outline-none "
           tabIndex={0}
         >
           <ChevronRight className="h-6 w-6" />

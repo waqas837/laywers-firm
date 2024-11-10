@@ -1,5 +1,7 @@
+"use client";
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 
 // Function to calculate reading time in minutes
 function calculateReadingTime(text) {
@@ -9,7 +11,8 @@ function calculateReadingTime(text) {
   return minutes;
 }
 
-const blogPosts = [
+// Mock blog data for pagination
+const allBlogPosts = [
   {
     title: "Understanding Personal Injury Law",
     description:
@@ -40,7 +43,18 @@ const blogPosts = [
   // Add more blog posts as needed
 ];
 
-function Blog() {
+const blogsPerPage = 3; // Number of blog posts per page
+
+function BlogList() {
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Calculate the starting and ending index for the blog posts
+  const startIndex = (currentPage - 1) * blogsPerPage;
+  const endIndex = startIndex + blogsPerPage;
+
+  const currentBlogs = allBlogPosts.slice(startIndex, endIndex);
+  const totalPages = Math.ceil(allBlogPosts.length / blogsPerPage);
+
   return (
     <section className="bg-yellow-50 py-16">
       <div className="max-w-7xl mx-auto px-4">
@@ -48,7 +62,7 @@ function Blog() {
           Informative Articles on Legal Topics
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {blogPosts.map((post, index) => (
+          {currentBlogs.map((post, index) => (
             <div
               key={index}
               className="bg-white border border-yellow-500 rounded-lg shadow-lg hover:shadow-2xl transition-all"
@@ -83,18 +97,35 @@ function Blog() {
           ))}
         </div>
 
-        {/* Show All Blogs Button */}
+        {/* Pagination */}
         <div className="flex justify-center mt-10">
-          <Link
-            href="/blogs"
-            className="bg-yellow-800 text-white py-2 px-6 rounded-lg hover:bg-yellow-600 transition-colors"
-          >
-            Show All Blogs
-          </Link>
+          <nav className="flex items-center space-x-4">
+            <button
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="px-4 py-2 bg-yellow-800 text-white rounded-lg disabled:opacity-50 hover:bg-yellow-600 transition-colors"
+            >
+              Previous
+            </button>
+
+            <span className="text-xl text-yellow-800">
+              Page {currentPage} of {totalPages}
+            </span>
+
+            <button
+              onClick={() =>
+                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+              }
+              disabled={currentPage === totalPages}
+              className="px-4 py-2 bg-yellow-800 text-white rounded-lg disabled:opacity-50 hover:bg-yellow-600 transition-colors"
+            >
+              Next
+            </button>
+          </nav>
         </div>
       </div>
     </section>
   );
 }
 
-export default Blog;
+export default BlogList;

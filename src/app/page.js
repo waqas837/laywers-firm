@@ -8,6 +8,7 @@ import CasesWeHandle from "@/components/CasesWeHandle";
 import Testimonials from "@/components/Testimonials";
 import Blog from "@/components/Blog";
 import Newsletter from "@/components/NewsLetter/Index";
+import Threesteps from "@/components/Threesteps/index";
 
 const Home = () => {
   return (
@@ -20,6 +21,7 @@ const Home = () => {
       <CasesWeHandle />
       <Testimonials />
       <Blog />
+      <Threesteps />
       <Newsletter />
     </div>
   );

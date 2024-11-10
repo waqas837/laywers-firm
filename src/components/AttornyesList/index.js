@@ -1,4 +1,5 @@
 import { Briefcase, Award } from "lucide-react"; // Example icons
+import Link from "next/link"; // Import Link from Next.js
 
 function AttorneysList() {
   const attorneys = [
@@ -77,6 +78,16 @@ function AttorneysList() {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Meet the team button */}
+      <div className="mt-8">
+        <Link
+          href="/team"
+          className="inline-block px-6 py-3 bg-yellow-600 text-white font-semibold rounded-lg hover:bg-yellow-500 transition-colors"
+        >
+          Meet the Team
+        </Link>
       </div>
     </section>
   );

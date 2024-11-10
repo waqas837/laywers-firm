@@ -21,7 +21,7 @@ const WebsiteHeroSection = () => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 py-20 px-8 relative">
       {/* Fixed Chatbot at Bottom Right */}
-      <div className="fixed bottom-4 right-4 z-50">
+      <div className="fixed bottom-4 right-4">
         {loading ? (
           // Loading animation with bouncing dots
           <div
