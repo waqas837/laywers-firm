@@ -1,6 +1,9 @@
 import React from "react";
+import getBlogs from "@/apis/GetBlogs";
 
-const BlogDetail = () => {
+const BlogDetail = async () => {
+  let blogs = await getBlogs();
+  console.log("blogs", blogs);
   return (
     <div className="bg-gray-50">
       <div className="max-w-6xl mx-auto p-6">
