@@ -78,17 +78,17 @@ const LawFirmAdminSidebar = () => {
       ],
     },
     {
-      name: "Cases",
+      name: "Paractice Areas",
       icon: <FileText className="w-5 h-5 mr-2 text-blue-500" />,
       subNav: [
         {
-          name: "Add Case",
-          href: "/admin/cases/create",
+          name: "Add Paractice Area",
+          href: "/admin/areas/create",
           icon: <Edit className="w-5 h-5 mr-2 text-green-500" />,
         },
         {
-          name: "Edit Cases",
-          href: "/admin/cases/edit",
+          name: "Edit Areas",
+          href: "/admin/areas/edit",
           icon: <Edit className="w-5 h-5 mr-2 text-yellow-500" />,
         },
         {
