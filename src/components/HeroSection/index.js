@@ -1,5 +1,5 @@
 "use client";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, Loader } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import LawFirmLogos from "../CompanyNames";
 import Chatbot from "react-chatbot-kit";
@@ -7,23 +7,74 @@ import "react-chatbot-kit/build/main.css";
 import config from "../ChatbotFiles/config";
 import MessageParser from "../ChatbotFiles/MessageParser";
 import ActionProvider from "../ChatbotFiles/ActionProvider";
-import { MessageCircle } from "lucide-react"; // Importing icons
+import { MessageCircle } from "lucide-react";
+import { strapiUrl } from "@/apis/apiUrl";
+import toast, { Toaster } from "react-hot-toast";
 
 const WebsiteHeroSection = () => {
   const [showChat, setShowChat] = useState(true);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    fullname: "",
+    email: "",
+    phone: "",
+    issue: "",
+  });
 
-  // Effect to control loading animation
   useEffect(() => {
     const timer = setTimeout(() => setLoading(false), 2000); // 2 seconds delay
     return () => clearTimeout(timer);
   }, []);
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.id]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    const requestData = {
+      data: formData,
+    };
+
+    try {
+      const response = await fetch(`${strapiUrl}/review-cases`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestData),
+      });
+
+      const data = await response.json();
+      console.log("data ", data);
+      if (data?.data?.id) {
+        toast.success(
+          "Your case review request has been submitted successfully!"
+        );
+        setFormData({
+          fullname: "",
+          email: "",
+          phone: "",
+          issue: "",
+        }); // Reset form fields after successful submission
+      } else {
+        toast.error("Something went wrong.");
+      }
+    } catch (error) {
+      console.error("Error submitting form:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 py-20 px-8 relative">
       {/* Fixed Chatbot at Bottom Right */}
+      <Toaster />
       <div className="fixed bottom-4 right-4">
         {loading ? (
-          // Loading animation with bouncing dots
           <div
             style={{
               display: "flex",
@@ -36,32 +87,7 @@ const WebsiteHeroSection = () => {
               right: "20px",
             }}
           >
-            <div className="dot" style={{ animationDelay: "0s" }}>
-              •
-            </div>
-            <div className="dot" style={{ animationDelay: "0.2s" }}>
-              •
-            </div>
-            <div className="dot" style={{ animationDelay: "0.4s" }}>
-              •
-            </div>
-
-            <style jsx>{`
-              .dot {
-                font-size: 30px;
-                color: #e0bc2d;
-                animation: bounce 0.6s infinite alternate;
-                padding: 0 2px;
-              }
-              @keyframes bounce {
-                from {
-                  transform: translateY(0);
-                }
-                to {
-                  transform: translateY(-10px);
-                }
-              }
-            `}</style>
+            <Loader className="animate-spin text-yellow-600" size={32} />
           </div>
         ) : (
           <>
@@ -81,7 +107,6 @@ const WebsiteHeroSection = () => {
                 messageParser={MessageParser}
               />
             )}
-
             {!showChat && (
               <button
                 onClick={() => setShowChat((prev) => !prev)}
@@ -109,6 +134,7 @@ const WebsiteHeroSection = () => {
           </>
         )}
       </div>
+
       {/* Left Section: Text */}
       <div className="flex flex-col justify-between mb-8 md:mb-0 md:pr-8">
         <div>
@@ -131,25 +157,27 @@ const WebsiteHeroSection = () => {
 
       {/* Right Section: Form */}
       <div className="bg-white text-gray-800 rounded-md shadow-lg p-8 flex items-center justify-center">
-        <form className="w-full max-w-lg flex flex-col">
+        <form className="w-full max-w-lg flex flex-col" onSubmit={handleSubmit}>
           <h2 className="text-3xl font-semibold text-center mb-4 text-gray-900">
             Request a Case Review
           </h2>
-          {/* Bigger vertical line */}
           <div className="border-t-4 border-yellow-600 w-1/2 mx-auto mb-5"></div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
             <div>
               <label
-                htmlFor="name"
+                htmlFor="fullname"
                 className="block font-medium text-gray-700 mb-2"
               >
                 Full Name
               </label>
               <input
                 type="text"
-                id="name"
+                id="fullname"
+                value={formData.fullname}
+                onChange={handleChange}
                 className="w-full px-4 py-3 border border-gray-300 shadow-sm focus:outline-none ring-1 ring-yellow-500 focus:border-yellow-500 transition duration-300"
                 placeholder="Enter your full name"
+                required
               />
             </div>
 
@@ -163,8 +191,11 @@ const WebsiteHeroSection = () => {
               <input
                 type="email"
                 id="email"
+                value={formData.email}
+                onChange={handleChange}
                 className="w-full px-4 py-3 border border-gray-300 shadow-sm focus:outline-none ring-1 ring-yellow-500 focus:border-yellow-500 transition duration-300"
                 placeholder="Enter your email"
+                required
               />
             </div>
           </div>
@@ -178,38 +209,43 @@ const WebsiteHeroSection = () => {
             <input
               type="tel"
               id="phone"
+              value={formData.phone}
+              onChange={handleChange}
               className="w-full px-4 py-3 border border-gray-300 shadow-sm focus:outline-none ring-1 ring-yellow-500 focus:border-yellow-500 transition duration-300"
               placeholder="Enter your phone number"
+              required
             />
           </div>
-          {/* Describe Legal Issue Section */}
           <div className="mb-4">
             <label
-              htmlFor="message"
+              htmlFor="issue"
               className="block font-medium text-gray-700 mb-2"
             >
               Describe Your Legal Issue
             </label>
             <textarea
-              id="message"
+              id="issue"
+              value={formData.issue}
+              onChange={handleChange}
               rows="6"
               className="w-full px-4 py-3 border border-gray-300 shadow-sm focus:outline-none ring-1 ring-yellow-500 focus:border-yellow-500 transition duration-300"
               placeholder="Please describe your legal issue in detail"
+              required
             ></textarea>
           </div>
           <button
             type="submit"
             className="w-full bg-yellow-600 text-white font-semibold py-2 px-6 hover:bg-yellow-700 transition-colors duration-300 flex flex-col items-center justify-center space-y-1"
           >
-            <CheckCircle className="h-6 w-6" /> {/* Icon */}
-            <span className="text-xl font-semibold">
-              Submit for Review
-            </span>{" "}
-            {/* Main Text */}
+            {loading ? (
+              <Loader className="animate-spin text-white" size={24} />
+            ) : (
+              <CheckCircle className="h-6 w-6" />
+            )}
+            <span className="text-xl font-semibold">Submit for Review</span>
             <span className="text-sm font-medium opacity-70">
               Your submission will be reviewed soon
-            </span>{" "}
-            {/* Caption Text */}
+            </span>
           </button>
         </form>
       </div>

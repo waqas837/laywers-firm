@@ -1,128 +1,123 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import "react-quill/dist/quill.snow.css";
-
+import { strapiUrl } from "@/apis/apiUrl";
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 
 const BlogCreatePage = () => {
+  const [blogs, setBlogs] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [description, setDescription] = useState("");
   const [image, setImage] = useState(null);
   const [video, setVideo] = useState(null);
-  const [blogs, setBlogs] = useState([
-    {
-      id: 1,
-      title: "Mastering React Hooks",
-      content:
-        "Dive into the world of React Hooks and learn how to build powerful and efficient applications.",
-      image: "/api/placeholder/800/400",
-      video: null,
-    },
-    {
-      id: 2,
-      title: "The Ultimate Guide to Next.js",
-      content:
-        "Explore the features and capabilities of Next.js, the React framework for building server-rendered applications.",
-      image: "/api/placeholder/800/400",
-      video: null,
-    },
-    {
-      id: 3,
-      title: "Optimizing Website Performance",
-      content:
-        "Discover techniques and best practices to improve the performance of your website and provide a better user experience.",
-      image: "/api/placeholder/800/400",
-      video: null,
-    },
-    {
-      id: 4,
-      title: "Functional Programming in JavaScript",
-      content:
-        "Learn how to write clean, maintainable, and scalable JavaScript code using functional programming principles.",
-      image: "/api/placeholder/800/400",
-      video: null,
-    },
-  ]);
   const [selectedBlog, setSelectedBlog] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleSubmit = () => {
+  // Fetch blogs from API
+  const fetchBlogs = async () => {
+    try {
+      const response = await fetch(`${strapiUrl}/blogs`);
+      const data = await response.json();
+      console.log("data", data);
+      setBlogs(data.data); // Assuming `data.data` contains the blogs array
+    } catch (error) {
+      console.error("Error fetching blogs:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchBlogs();
+  }, []);
+
+  // Delete a blog
+  const handleDelete = async (id) => {
+    try {
+      const response = await fetch(`${apiUrl}/blogs/${id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete blog");
+      }
+
+      alert("Blog deleted successfully!");
+      fetchBlogs(); // Refresh the list
+    } catch (error) {
+      console.error("Error deleting blog:", error);
+    }
+  };
+
+  // Update a blog
+  const handleModalSubmit = async () => {
     if (!title || !content) {
       alert("Title and content are required!");
       return;
     }
 
-    const newBlog = {
-      id: blogs.length + 1,
-      title,
-      content,
-      image: image || "/api/placeholder/800/400",
-      video,
-    };
-    setBlogs([...blogs, newBlog]);
+    try {
+      const formData = new FormData();
+      formData.append("title", title);
+      formData.append("content", content);
+      formData.append("description", description);
+      if (image) formData.append("image", image);
+      if (video) formData.append("video", video);
 
-    alert("Blog submitted successfully!");
-    setTitle("");
-    setContent("");
-    setImage(null);
-    setVideo(null);
+      const response = await fetch(`${apiUrl}/blogs/${selectedBlog.id}`, {
+        method: "PUT",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update blog");
+      }
+
+      alert("Blog updated successfully!");
+      handleModalClose();
+      fetchBlogs(); // Refresh the list
+    } catch (error) {
+      console.error("Error updating blog:", error);
+    }
   };
 
+  // Open the modal for editing
   const handleEdit = (blog) => {
     setSelectedBlog(blog);
     setTitle(blog.title);
     setContent(blog.content);
-    setImage(blog.image);
-    setVideo(blog.video);
+    setDescription(blog.description);
+    setImage(null);
+    setVideo(null);
     setIsModalOpen(true);
   };
 
-  const handleDelete = (id) => {
-    setBlogs(blogs.filter((blog) => blog.id !== id));
-  };
-
+  // Close the modal
   const handleModalClose = () => {
     setIsModalOpen(false);
     setSelectedBlog(null);
     setTitle("");
     setContent("");
+    setDescription("");
     setImage(null);
     setVideo(null);
   };
 
-  const handleModalSubmit = () => {
-    if (!title || !content) {
-      alert("Title and content are required!");
-      return;
-    }
-
-    const updatedBlog = {
-      ...selectedBlog,
-      title,
-      content,
-      image: image || "/api/placeholder/800/400",
-      video,
-    };
-    setBlogs(
-      blogs.map((blog) => (blog.id === selectedBlog.id ? updatedBlog : blog))
-    );
-
-    alert("Blog updated successfully!");
-    handleModalClose();
-  };
+  if (isLoading) return <div>Loading...</div>;
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
+    <div className="flex-grow min-h-screen bg-gray-100 p-8">
       <div className="max-w-6xl mx-auto bg-white p-8 rounded-lg shadow-md">
         <h1 className="text-4xl font-bold mb-6 text-gray-800">Blogs</h1>
 
-        {/* Table for Blog List */}
         <table className="w-full table-auto border-collapse">
           <thead>
             <tr className="bg-gray-200">
               <th className="px-6 py-3 text-left text-gray-800">Title</th>
-              <th className="px-6 py-3 text-left text-gray-800">Content</th>
+              <th className="px-6 py-3 text-left text-gray-800">Description</th>
               <th className="px-6 py-3 text-left text-gray-800">Image</th>
               <th className="px-6 py-3 text-left text-gray-800">Actions</th>
             </tr>
@@ -130,13 +125,17 @@ const BlogCreatePage = () => {
           <tbody>
             {blogs.map((blog) => (
               <tr key={blog.id} className="border-b">
-                <td className="px-6 py-4 text-gray-700">{blog.title}</td>
-                <td className="px-6 py-4 text-gray-700">{blog.content}</td>
+                <td className="px-6 py-4 text-gray-700">
+                  {blog.attributes.title}
+                </td>
+                <td className="px-6 py-4 text-gray-700">
+                  {blog.attributes.description}
+                </td>
                 <td className="px-6 py-4">
-                  {blog.image && (
+                  {blog.attributes.image && (
                     <img
-                      src={blog.image}
-                      alt={blog.title}
+                      src={blog.attributes.image}
+                      alt={blog.attributes.title}
                       className="w-24 h-16 object-cover"
                     />
                   )}
@@ -166,7 +165,6 @@ const BlogCreatePage = () => {
             <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-xl">
               <h2 className="text-2xl font-semibold mb-4">Edit Blog</h2>
 
-              {/* Title */}
               <div className="mb-4">
                 <label className="block text-gray-700 font-medium mb-2">
                   Title
@@ -180,7 +178,18 @@ const BlogCreatePage = () => {
                 />
               </div>
 
-              {/* Content */}
+              <div className="mb-4">
+                <label className="block text-gray-700 font-medium mb-2">
+                  Description
+                </label>
+                <textarea
+                  className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Enter the blog description"
+                />
+              </div>
+
               <div className="mb-4">
                 <label className="block text-gray-700 font-medium mb-2">
                   Content
@@ -190,12 +199,9 @@ const BlogCreatePage = () => {
                   value={content}
                   onChange={setContent}
                   placeholder="Write your blog content here..."
-                  className="bg-white"
-                  style={{ height: "200px", marginBottom: 50 }}
                 />
               </div>
 
-              {/* Modal Actions */}
               <div className="flex justify-end">
                 <button
                   onClick={handleModalClose}

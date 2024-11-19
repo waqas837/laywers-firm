@@ -1,45 +1,25 @@
+import { strapiUrl, strapiUrlMedia } from "@/apis/apiUrl";
+import axios from "axios";
 import { Briefcase, Award } from "lucide-react"; // Example icons
 import Link from "next/link"; // Import Link from Next.js
 
-function AttorneysList() {
-  const attorneys = [
-    {
-      name: "John Doe",
-      position: "Senior Attorney",
-      casesHandled: 120,
-      imageUrl: "/1i.jpg", // Replace with actual image path
-    },
-    {
-      name: "Jane Smith",
-      position: "Attorney",
-      casesHandled: 85,
-      imageUrl: "/2i.jpg", // Replace with actual image path
-    },
-    {
-      name: "Mike Johnson",
-      position: "Junior Attorney",
-      casesHandled: 45,
-      imageUrl: "3i.jpg", // Replace with actual image path
-    },
-    {
-      name: "Emily Davis",
-      position: "Lead Attorney",
-      casesHandled: 160,
-      imageUrl: "/4i.jpg", // Replace with actual image path
-    },
-    {
-      name: "David Brown",
-      position: "Senior Attorney",
-      casesHandled: 130,
-      imageUrl: "5i.jpg", // Replace with actual image path
-    },
-    {
-      name: "Sophia Martinez",
-      position: "Attorney",
-      casesHandled: 95,
-      imageUrl: "/6i.jpg", // Replace with actual image path
-    },
-  ];
+async function AttorneysList() {
+  const STRAPI_URL = `${strapiUrl}/teams`;
+
+  // Fetch all teams from Strapi
+  const fetchTeams = async () => {
+    try {
+      const { data } = await axios.get(
+        `${STRAPI_URL}?populate=profileimg&pagination[limit]=6&sort[0]=createdAt:desc`
+      );
+      return data.data; // Return the data for use in the component
+    } catch (error) {
+      console.error("Error fetching teams:", error);
+      return []; // Return empty array in case of error
+    }
+  };
+
+  const attorneys = await fetchTeams(); // Fetch attorneys from the API
 
   return (
     <section className="flex flex-col items-center p-6 my-20">
@@ -57,23 +37,30 @@ function AttorneysList() {
             className="flex flex-col items-center bg-white border border-yellow-500 rounded-lg shadow-md p-4 hover:shadow-xl transition-shadow"
           >
             <img
-              src={attorney.imageUrl}
-              alt={attorney.name}
+              src={
+                `${strapiUrlMedia}${attorney.attributes.profileimg?.data?.attributes?.url}` ||
+                "/default.jpg"
+              } // Fallback to a default image if profile image is not available
+              alt={attorney.attributes.name}
               className="w-32 h-32 rounded-full object-cover mb-4"
             />
             <div className="text-center">
               <h3 className="text-xl font-semibold text-yellow-800">
-                {attorney.name}
+                {attorney.attributes.name}
               </h3>
-              <p className="text-yellow-600">{attorney.position}</p>
+              <p className="text-yellow-600">
+                {attorney.attributes.position || "Attorney"}
+              </p>
               <div className="mt-2 flex items-center justify-center text-yellow-800">
                 <Briefcase size={18} className="mr-1" />
-                <span>{attorney.casesHandled} Cases Handled</span>
+                <span>{attorney.attributes.case_handle} Cases Handled</span>
               </div>
               <div className="mt-3 flex items-center justify-center text-yellow-800">
                 <Award size={18} className="mr-1" />
-                <span>Expert in Personal Injury</span>{" "}
-                {/* Customize the expertise */}
+                <span>
+                  {attorney.attributes.expertise || "Expert in Personal Injury"}
+                </span>{" "}
+                {/* Customize expertise */}
               </div>
             </div>
           </div>

@@ -1,78 +1,43 @@
 "use client";
-import { Briefcase, Award, Mail, Phone, X } from "lucide-react"; // Added X icon
-import { useState } from "react"; // For managing filter state
+import { Briefcase, Mail, Phone, X } from "lucide-react"; // Added X icon
+import { useState, useEffect } from "react"; // For managing filter state and fetching data
+import axios from "axios"; // Make sure you import axios
+import { strapiUrl, strapiUrlMedia } from "@/apis/apiUrl";
+const STRAPI_URL = `${strapiUrl}/teams`; // Replace with your actual Strapi URL
 
 function TeamDetails() {
-  const teamMembers = [
-    {
-      name: "John Doe",
-      position: "Senior Attorney",
-      casesHandled: 120,
-      email: "johndoe@email.com",
-      phone: "+1 (555) 123-4567",
-      imageUrl: "/1i.jpg", // Replace with actual image path
-      specialization: "Personal Injury",
-    },
-    {
-      name: "Jane Smith",
-      position: "Attorney",
-      casesHandled: 85,
-      email: "janesmith@email.com",
-      phone: "+1 (555) 234-5678",
-      imageUrl: "/2i.jpg", // Replace with actual image path
-      specialization: "Medical Malpractice",
-    },
-    {
-      name: "Mike Johnson",
-      position: "Junior Attorney",
-      casesHandled: 45,
-      email: "mikejohnson@email.com",
-      phone: "+1 (555) 345-6789",
-      imageUrl: "/3i.jpg", // Replace with actual image path
-      specialization: "Car Accidents",
-    },
-    {
-      name: "Emily Davis",
-      position: "Lead Attorney",
-      casesHandled: 160,
-      email: "emilydavis@email.com",
-      phone: "+1 (555) 456-7890",
-      imageUrl: "/4i.jpg", // Replace with actual image path
-      specialization: "Construction Accidents",
-    },
-    {
-      name: "David Brown",
-      position: "Senior Attorney",
-      casesHandled: 130,
-      email: "davidbrown@email.com",
-      phone: "+1 (555) 567-8901",
-      imageUrl: "/5i.jpg", // Replace with actual image path
-      specialization: "Workplace Injuries",
-    },
-    {
-      name: "Sophia Martinez",
-      position: "Attorney",
-      casesHandled: 95,
-      email: "sophiamartinez@email.com",
-      phone: "+1 (555) 678-9012",
-      imageUrl: "/6i.jpg", // Replace with actual image path
-      specialization: "Nursing Home Abuse",
-    },
-  ];
+  const [teamMembers, setTeamMembers] = useState([]); // State to store team data
+  const [searchTerm, setSearchTerm] = useState(""); // For search term
+  const [selectedSpecialization, setSelectedSpecialization] = useState(""); // For selected specialization
 
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedSpecialization, setSelectedSpecialization] = useState("");
+  // Fetch all team members from Strapi
+  const fetchTeams = async () => {
+    try {
+      const { data } = await axios.get(`${STRAPI_URL}?populate=profileimg`);
+      setTeamMembers(data.data); // Set team members into state
+    } catch (error) {
+      console.error("Error fetching teams:", error);
+      setTeamMembers([]); // In case of error, set an empty array
+    }
+  };
 
+  // Run the fetchTeams function when the component mounts
+  useEffect(() => {
+    fetchTeams();
+  }, []);
+
+  // Filter team based on the search term and specialization
   const filteredTeam = teamMembers.filter((member) => {
-    const matchesName = member.name
+    const matchesName = member.attributes.name
       .toLowerCase()
       .includes(searchTerm.toLowerCase());
     const matchesSpecialization = selectedSpecialization
-      ? member.specialization === selectedSpecialization
+      ? member.attributes.specialization === selectedSpecialization
       : true;
     return matchesName && matchesSpecialization;
   });
 
+  // Specialization options
   const specializations = [
     "Personal Injury",
     "Medical Malpractice",
@@ -82,6 +47,7 @@ function TeamDetails() {
     "Nursing Home Abuse",
   ];
 
+  // Handle clear filters
   const handleClearFilters = () => {
     setSearchTerm(""); // Clear search term
     setSelectedSpecialization(""); // Clear specialization filter
@@ -152,32 +118,37 @@ function TeamDetails() {
             className="flex flex-col items-center bg-white border border-yellow-500 rounded-lg shadow-xl p-6 hover:shadow-2xl transition-shadow"
           >
             <img
-              src={member.imageUrl}
-              alt={member.name}
+              src={
+                `${strapiUrlMedia}${member.attributes.profileimg?.data?.attributes?.url}` ||
+                "/default.jpg"
+              }
+              alt={member.attributes.name}
               className="w-40 h-40 rounded-full object-cover mb-6"
             />
             <div className="text-center">
               <h3 className="text-2xl font-semibold text-yellow-800 mb-2">
-                {member.name}
+                {member.attributes.name}
               </h3>
-              <p className="text-xl text-yellow-600 mb-3">{member.position}</p>
+              <p className="text-xl text-yellow-600 mb-3">
+                {member.attributes.position}
+              </p>
               <p className="text-gray-600 mb-4">
                 Specializes in:{" "}
                 <span className="text-yellow-800 font-medium">
-                  {member.specialization}
+                  {member.attributes.expertise}
                 </span>
               </p>
               <div className="flex items-center justify-center text-gray-700 mb-3">
                 <Briefcase size={20} className="mr-2" />
-                <span>{member.casesHandled} Cases Handled</span>
+                <span>{member.attributes.case_handle} Cases Handled</span>
               </div>
               <div className="flex items-center justify-center text-gray-700 mb-3">
                 <Mail size={20} className="mr-2" />
-                <span>{member.email}</span>
+                <span>{member.attributes.email}</span>
               </div>
               <div className="flex items-center justify-center text-gray-700 mb-3">
                 <Phone size={20} className="mr-2" />
-                <span>{member.phone}</span>
+                <span>{member.attributes.phone}</span>
               </div>
             </div>
           </div>

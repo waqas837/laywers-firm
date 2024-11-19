@@ -67,3 +67,8 @@
 html {
   scroll-behavior: smooth;
 }
+/* global.css */
+h1, h2, h3, h4, h5, h6 {
+  all: unset;
+  display: block;
+}

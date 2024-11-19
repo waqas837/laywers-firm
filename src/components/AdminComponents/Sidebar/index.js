@@ -11,7 +11,9 @@ import {
   Settings,
   Edit,
   Trash,
+  LogOut, // Import the LogOut icon
 } from "lucide-react";
+import Link from "next/link";
 
 const LawFirmAdminSidebar = () => {
   const router = useRouter();
@@ -29,6 +31,11 @@ const LawFirmAdminSidebar = () => {
     }));
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem("adminToken"); // Remove the token from localStorage
+    router.push("/admin");
+  };
+
   const navigation = [
     {
       name: "Dashboard",
@@ -41,18 +48,13 @@ const LawFirmAdminSidebar = () => {
       subNav: [
         {
           name: "Add Blog",
-          href: "/admin/blogs/create",
+          href: "/dashboard/blogs/create",
           icon: <Edit className="w-5 h-5 mr-2 text-green-500" />,
         },
         {
           name: "Edit Blogs",
-          href: "/admin/blogs/edit",
+          href: "/dashboard/blogs/edit",
           icon: <Edit className="w-5 h-5 mr-2 text-yellow-500" />,
-        },
-        {
-          name: "Delete Blogs",
-          href: "/admin/blogs/delete",
-          icon: <Trash className="w-5 h-5 mr-2 text-red-500" />,
         },
       ],
     },
@@ -62,45 +64,35 @@ const LawFirmAdminSidebar = () => {
       subNav: [
         {
           name: "Add Team Member",
-          href: "/admin/team/create",
+          href: "/dashboard/team/create",
           icon: <Edit className="w-5 h-5 mr-2 text-green-500" />,
         },
         {
           name: "Edit Team",
-          href: "/admin/team/edit",
+          href: "/dashboard/team/edit",
           icon: <Edit className="w-5 h-5 mr-2 text-yellow-500" />,
-        },
-        {
-          name: "Remove Team Member",
-          href: "/admin/team/delete",
-          icon: <Trash className="w-5 h-5 mr-2 text-red-500" />,
         },
       ],
     },
     {
-      name: "Paractice Areas",
+      name: "Practice Areas",
       icon: <FileText className="w-5 h-5 mr-2 text-blue-500" />,
       subNav: [
         {
-          name: "Add Paractice Area",
-          href: "/admin/areas/create",
+          name: "Add Practice Area",
+          href: "/dashboard/areas/create",
           icon: <Edit className="w-5 h-5 mr-2 text-green-500" />,
         },
         {
           name: "Edit Areas",
-          href: "/admin/areas/edit",
+          href: "/dashboard/areas/edit",
           icon: <Edit className="w-5 h-5 mr-2 text-yellow-500" />,
-        },
-        {
-          name: "Close Cases",
-          href: "/admin/cases/delete",
-          icon: <Trash className="w-5 h-5 mr-2 text-red-500" />,
         },
       ],
     },
     {
       name: "Settings",
-      href: "/admin/settings",
+      href: "/dashboard/settings",
       icon: <Settings className="w-5 h-5 mr-2 text-blue-500" />,
     },
   ];
@@ -156,7 +148,7 @@ const LawFirmAdminSidebar = () => {
                 {item.subNav && expandedNav[item.name] && (
                   <div className="ml-4 space-y-1">
                     {item.subNav.map((subItem) => (
-                      <a
+                      <Link
                         key={subItem.name}
                         href={subItem.href}
                         className={`flex items-center px-4 py-2 rounded-lg text-white hover:bg-gray-700 transition-colors ${
@@ -165,13 +157,22 @@ const LawFirmAdminSidebar = () => {
                       >
                         {subItem.icon}
                         <span>{subItem.name}</span>
-                      </a>
+                      </Link>
                     ))}
                   </div>
                 )}
               </div>
             ))}
           </nav>
+
+          {/* Logout Button */}
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center justify-start px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700 mt-6"
+          >
+            <LogOut className="w-5 h-5 mr-2" />
+            Logout
+          </button>
         </div>
 
         {/* Main content area */}

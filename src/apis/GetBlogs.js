@@ -1,7 +1,9 @@
-async function getBlogs() {
-  // Add your API base URL to .env.local
-  const apiUrl = "http://localhost:1337/api/blogs";
-  console.log("this api is called....");
+import { strapiUrl } from "./apiUrl";
+
+async function getBlogs(slug) {
+  slug = slug[0];
+  // strapi url.
+  const apiUrl = `${strapiUrl}/blogs?filters[slug][$containsi]=${slug}&populate=*`;
   try {
     const response = await fetch(`${apiUrl}`, {
       // Next.js fetch options

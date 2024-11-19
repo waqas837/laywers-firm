@@ -1,83 +1,109 @@
+// app/area/[name]/page.js
 import Link from "next/link";
+import Image from "next/image";
+import { strapiUrl, strapiUrlMedia } from "@/apis/apiUrl";
 
-const DetailArea = () => {
+// Metadata for the page
+// export async function generateMetadata({ params }) {
+//   console.log("arams.name")
+//   const titleQuery = params.name.split("-").join(" ");
+//   const data = await fetchAreaDetail(titleQuery);
+
+//   return {
+//     title: `${data?.attributes?.title || "Practice Area"} | Your Law Firm Name`,
+//     description:
+//       data?.attributes?.description || "Learn more about our legal services",
+//   };
+// }
+
+// Server-side data fetching
+async function fetchAreaDetail(titleQuery) {
+  try {
+    const response = await fetch(
+      `${strapiUrl}/paractice-areas?filters[title][$containsi]=${titleQuery}&populate=*`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        // Add cache options
+        next: {
+          revalidate: 3600, // Revalidate every hour
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch area details");
+    }
+
+    const data = await response.json();
+    console.log("data", data);
+    if (!data.data || data.data.length === 0) {
+      throw new Error("Practice area not found");
+    }
+
+    return data.data[0];
+  } catch (error) {
+    console.error("Error fetching area details:", error);
+    throw error;
+  }
+}
+
+export default async function DetailArea({ params }) {
+  const data = await fetchAreaDetail(params.name[0]);
+  const areaData = data.attributes;
   return (
     <section className="max-w-screen-lg mx-auto p-6 space-y-8">
       {/* Title */}
       <h1 className="text-4xl font-bold text-center text-yellow-600 mb-4">
-        Personal Injury Law
+        {areaData.title}
       </h1>
-
       {/* Description */}
       <div className="text-center">
-        <p className="text-lg text-gray-700 mb-4">
-          Personal injury law covers a wide range of incidents where individuals
-          suffer harm due to the negligence of others. In this section, we
-          explore how personal injury cases work and what you need to know to
-          protect your rights and seek compensation.
-        </p>
+        <p className="text-lg text-gray-700 mb-4">{areaData.description}</p>
       </div>
-
       {/* Image & Video Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Image */}
-        <div className="flex justify-center">
+        <div className="flex justify-center relative aspect-video">
           <img
-            src="/images/personal-injury.jpg"
-            alt="Personal Injury Law"
-            className="w-full h-auto rounded-lg shadow-lg"
+            src={
+              `${strapiUrlMedia}${areaData.image?.data?.attributes?.url}` ||
+              "/api/placeholder/800/400"
+            }
+            alt={areaData.title}
+            fill
+            className="object-cover rounded-lg shadow-lg"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            priority
           />
         </div>
 
         {/* Video */}
-        <div className="flex justify-center items-center">
-          <iframe
-            src="https://www.youtube.com/embed/1J3KzX04yXQ" // Example video link
-            width="560"
-            height="315"
-            className="rounded-lg shadow-lg"
-            title="Personal Injury Law Video"
-          ></iframe>
+        <div className="flex justify-center items-center aspect-video">
+          {areaData.video?.data?.attributes?.url ? (
+            <video
+              src={`${strapiUrlMedia}${areaData.video.data.attributes.url}`}
+              className="w-full h-full rounded-lg shadow-lg"
+              title={`${areaData.title} Video`}
+              controls
+            />
+          ) : (
+            <div className="w-full h-full bg-gray-100 rounded-lg flex items-center justify-center text-gray-500">
+              Video coming soon
+            </div>
+          )}
         </div>
       </div>
-
-      {/* Section Title */}
-      <div>
-        <h3 className="text-2xl font-semibold text-yellow-600 mb-4">
-          Why You Need a Personal Injury Lawyer
-        </h3>
-        <p className="text-lg text-gray-700">
-          When you are injured in an accident, it can be difficult to navigate
-          the complexities of the legal system. A personal injury lawyer can
-          help you understand your rights, determine the amount of compensation
-          you deserve, and guide you through the entire legal process. Whether
-          your injury occurred on the road, at work, or in a public place, our
-          team of expert lawyers is here to help you get the compensation you
-          deserve.
-        </p>
-      </div>
-
-      {/* Section Title */}
-      <div>
-        <h3 className="text-2xl font-semibold text-yellow-600 mb-4">
-          Common Types of Personal Injury Cases
-        </h3>
-        <ul className="list-disc pl-6 space-y-2 text-gray-700">
-          <li>Car Accidents</li>
-          <li>Slip and Fall Accidents</li>
-          <li>Workplace Injuries</li>
-          <li>Medical Malpractice</li>
-          <li>Dog Bites</li>
-          <li>Product Liability</li>
-        </ul>
-      </div>
-
+      {/* content section */}
+      <div dangerouslySetInnerHTML={{ __html: areaData?.content || "" }} />
       {/* Call to Action */}
       <div className="text-center mt-8">
         <p className="text-lg text-gray-700 mb-4">
-          If you or a loved one has suffered a personal injury, contact us today
-          for a free consultation. Our experienced lawyers are ready to help you
-          fight for the justice and compensation you deserve.
+          If you need assistance with a {areaData.title.toLowerCase()} case,
+          contact us today for a free consultation. Our experienced lawyers are
+          ready to help you.
         </p>
         <Link
           href="/contact"
@@ -88,6 +114,22 @@ const DetailArea = () => {
       </div>
     </section>
   );
-};
+}
 
-export default DetailArea;
+// Error component
+// app/area/[name]/error.js
+export function ErrorBoundary({ error }) {
+  return (
+    <div className="max-w-screen-lg mx-auto p-6 text-center">
+      <p className="text-red-600 mb-4">
+        {error.message || "Something went wrong"}
+      </p>
+      <Link
+        href="/practice-areas"
+        className="inline-block px-6 py-3 bg-yellow-600 text-white font-semibold rounded-lg hover:bg-yellow-500 transition-colors"
+      >
+        Back to Practice Areas
+      </Link>
+    </div>
+  );
+}
