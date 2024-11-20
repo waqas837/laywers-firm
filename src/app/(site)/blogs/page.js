@@ -1,59 +1,50 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { strapiUrl, strapiUrlMedia } from "@/apis/apiUrl";
 
-// Function to calculate reading time in minutes
 function calculateReadingTime(text) {
-  const wordsPerMinute = 200; // Average reading speed (words per minute)
-  const wordCount = text.split(" ").length; // Count words in the text
-  const minutes = Math.ceil(wordCount / wordsPerMinute); // Round up the result
+  const wordsPerMinute = 200;
+  const wordCount = text?.split(" ").length || 0;
+  const minutes = Math.ceil(wordCount / wordsPerMinute);
   return minutes;
 }
 
-// Mock blog data for pagination
-const allBlogPosts = [
-  {
-    title: "Understanding Personal Injury Law",
-    description:
-      "Personal injury law covers a wide range of incidents. In this article, we break down key concepts and what you need to know to protect your rights.",
-    content:
-      "Personal injury law covers a wide range of incidents. This is where the description text would be expanded with more content to make it more realistic and allow for a word count calculation.",
-    imageUrl: "/1c.webp", // Replace with actual image path
-    link: "/blog/understanding-personal-injury-law", // Link to the full article
-  },
-  {
-    title: "What to Do After a Car Accident",
-    description:
-      "If you’ve been in a car accident, there are steps you must take immediately. This article guides you through the process to ensure you are fully protected.",
-    content:
-      "If you’ve been in a car accident, there are steps you must take immediately. We provide you with detailed steps and insights on how to handle the situation.",
-    imageUrl: "/2c.png", // Replace with actual image path
-    link: "/blog/what-to-do-after-a-car-accident", // Link to the full article
-  },
-  {
-    title: "The Importance of Medical Malpractice Claims",
-    description:
-      "Medical malpractice can have serious consequences. Learn how to protect yourself and navigate the claims process in this in-depth article.",
-    content:
-      "Medical malpractice can have serious consequences. We explain the process for filing a claim and how to get the compensation you deserve.",
-    imageUrl: "/3c.jpg", // Replace with actual image path
-    link: "/blog/importance-of-medical-malpractice-claims", // Link to the full article
-  },
-  // Add more blog posts as needed
-];
+function AllBlogs() {
+  const [blogPosts, setBlogPosts] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-const blogsPerPage = 3; // Number of blog posts per page
+  useEffect(() => {
+    const fetchBlogs = async () => {
+      try {
+        const response = await fetch(
+          `${strapiUrl}/blogs?populate=*&pagination&sort[0]=createdAt:desc`
+        );
+        const data = await response.json();
+        console.log("Fetched data:", data);
+        setBlogPosts(data.data);
+      } catch (error) {
+        console.error("Error fetching blogs:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-function BlogList() {
-  const [currentPage, setCurrentPage] = useState(1);
+    fetchBlogs();
+  }, []);
 
-  // Calculate the starting and ending index for the blog posts
-  const startIndex = (currentPage - 1) * blogsPerPage;
-  const endIndex = startIndex + blogsPerPage;
-
-  const currentBlogs = allBlogPosts.slice(startIndex, endIndex);
-  const totalPages = Math.ceil(allBlogPosts.length / blogsPerPage);
+  if (isLoading) {
+    return (
+      <div className="bg-yellow-50 py-16">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex justify-center items-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-yellow-800"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <section className="bg-yellow-50 py-16">
@@ -62,32 +53,46 @@ function BlogList() {
           Informative Articles on Legal Topics
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {currentBlogs.map((post, index) => (
+          {blogPosts.map((post) => (
             <div
-              key={index}
+              key={post.id}
               className="bg-white border border-yellow-500 rounded-lg shadow-lg hover:shadow-2xl transition-all"
             >
-              <Image
-                src={post.imageUrl}
-                alt={post.title}
-                width={500}
-                height={300}
-                className="w-full h-48 object-cover rounded-t-lg"
-              />
+              {post.attributes.image?.data?.[0] && (
+                <div className="relative w-full h-48">
+                  <img
+                    src={`${strapiUrlMedia}${post.attributes.image.data[0].attributes.formats.medium.url}`}
+                    alt={post.attributes.title}
+                    fill
+                    className="object-cover rounded-t-lg"
+                  />
+                </div>
+              )}
               <div className="p-6">
                 <h3 className="text-xl font-semibold text-yellow-800 mb-4">
-                  {post.title}
+                  {post.attributes.title}
                 </h3>
-                <p className="text-gray-700 mb-4">{post.description}</p>
+                <p className="text-gray-700 mb-4">
+                  {post.attributes.description || "No description available"}
+                </p>
 
-                {/* Display reading time */}
+                {/* Date */}
+                <p className="text-sm text-gray-600 mb-2">
+                  Published:{" "}
+                  {new Date(post.attributes.publishedAt).toLocaleDateString()}
+                </p>
+
+                {/* Reading time */}
                 <p className="text-sm text-gray-600 mb-4">
-                  Estimated Reading Time: {calculateReadingTime(post.content)}{" "}
-                  minute{calculateReadingTime(post.content) > 1 ? "s" : ""}
+                  Estimated Reading Time:{" "}
+                  {calculateReadingTime(post.attributes.description)} minute
+                  {calculateReadingTime(post.attributes.description) > 1
+                    ? "s"
+                    : ""}
                 </p>
 
                 <Link
-                  href={post.link}
+                  href={`/blog/${post.attributes.slug}`}
                   className="text-yellow-800 font-semibold hover:text-yellow-600 transition-colors"
                 >
                   Read More
@@ -96,36 +101,9 @@ function BlogList() {
             </div>
           ))}
         </div>
-
-        {/* Pagination */}
-        <div className="flex justify-center mt-10">
-          <nav className="flex items-center space-x-4">
-            <button
-              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1}
-              className="px-4 py-2 bg-yellow-800 text-white rounded-lg disabled:opacity-50 hover:bg-yellow-600 transition-colors"
-            >
-              Previous
-            </button>
-
-            <span className="text-xl text-yellow-800">
-              Page {currentPage} of {totalPages}
-            </span>
-
-            <button
-              onClick={() =>
-                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-              }
-              disabled={currentPage === totalPages}
-              className="px-4 py-2 bg-yellow-800 text-white rounded-lg disabled:opacity-50 hover:bg-yellow-600 transition-colors"
-            >
-              Next
-            </button>
-          </nav>
-        </div>
       </div>
     </section>
   );
 }
 
-export default BlogList;
+export default AllBlogs;

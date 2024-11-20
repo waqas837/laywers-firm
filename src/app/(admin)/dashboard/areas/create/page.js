@@ -94,7 +94,7 @@ const PracticeAreasCreate = () => {
   };
 
   return (
-    <div className="flex-grow min-h-screen p-6 bg-gray-100">
+    <div className="flex-grow min-h-screen p-6  ">
       <div className="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md">
         <h2 className="text-2xl font-bold mb-4">Create Practice Area</h2>
 

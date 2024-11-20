@@ -1,6 +1,6 @@
 "use client";
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useEffect } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import {
   Menu,
   X,
@@ -11,14 +11,40 @@ import {
   Settings,
   Edit,
   Trash,
-  LogOut, // Import the LogOut icon
+  LogOut,
+  Mail,
 } from "lucide-react";
 import Link from "next/link";
 
 const LawFirmAdminSidebar = () => {
   const router = useRouter();
+  const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(true);
   const [expandedNav, setExpandedNav] = useState({});
+  const [activeItem, setActiveItem] = useState("");
+
+  useEffect(() => {
+    const findActiveItem = () => {
+      for (const item of navigation) {
+        if (item.href === pathname) {
+          setActiveItem(item.name);
+          return;
+        }
+        if (item.subNav) {
+          const activeSubItem = item.subNav.find(
+            (sub) => sub.href === pathname
+          );
+          if (activeSubItem) {
+            setActiveItem(activeSubItem.name);
+            setExpandedNav((prev) => ({ ...prev, [item.name]: true }));
+            return;
+          }
+        }
+      }
+    };
+
+    findActiveItem();
+  }, [pathname]);
 
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
@@ -32,7 +58,7 @@ const LawFirmAdminSidebar = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("adminToken"); // Remove the token from localStorage
+    localStorage.removeItem("adminToken");
     router.push("/admin");
   };
 
@@ -40,60 +66,66 @@ const LawFirmAdminSidebar = () => {
     {
       name: "Dashboard",
       href: "/admin",
-      icon: <Home className="w-5 h-5 mr-2 text-green-500" />,
+      icon: <Home className="w-5 h-5 mr-2 text-white opacity-70" />,
     },
     {
       name: "Blogs",
-      icon: <FileText className="w-5 h-5 mr-2 text-blue-500" />,
+      icon: <FileText className="w-5 h-5 mr-2 text-white opacity-70" />,
       subNav: [
         {
           name: "Add Blog",
           href: "/dashboard/blogs/create",
-          icon: <Edit className="w-5 h-5 mr-2 text-green-500" />,
+          icon: <Edit className="w-5 h-5 mr-2 text-white opacity-70" />,
         },
         {
           name: "Edit Blogs",
           href: "/dashboard/blogs/edit",
-          icon: <Edit className="w-5 h-5 mr-2 text-yellow-500" />,
+          icon: <Edit className="w-5 h-5 mr-2 text-white opacity-70" />,
         },
       ],
     },
     {
       name: "Team",
-      icon: <Users className="w-5 h-5 mr-2 text-blue-500" />,
+      icon: <Users className="w-5 h-5 mr-2 text-white opacity-70" />,
       subNav: [
         {
           name: "Add Team Member",
           href: "/dashboard/team/create",
-          icon: <Edit className="w-5 h-5 mr-2 text-green-500" />,
+          icon: <Edit className="w-5 h-5 mr-2 text-white opacity-70" />,
         },
         {
           name: "Edit Team",
           href: "/dashboard/team/edit",
-          icon: <Edit className="w-5 h-5 mr-2 text-yellow-500" />,
+          icon: <Edit className="w-5 h-5 mr-2 text-white opacity-70" />,
         },
       ],
     },
     {
       name: "Practice Areas",
-      icon: <FileText className="w-5 h-5 mr-2 text-blue-500" />,
+      icon: <FileText className="w-5 h-5 mr-2 text-white opacity-70" />,
       subNav: [
         {
           name: "Add Practice Area",
           href: "/dashboard/areas/create",
-          icon: <Edit className="w-5 h-5 mr-2 text-green-500" />,
+          icon: <Edit className="w-5 h-5 mr-2 text-white opacity-70" />,
         },
         {
           name: "Edit Areas",
           href: "/dashboard/areas/edit",
-          icon: <Edit className="w-5 h-5 mr-2 text-yellow-500" />,
+          icon: <Edit className="w-5 h-5 mr-2 text-white opacity-70" />,
         },
       ],
     },
     {
-      name: "Settings",
-      href: "/dashboard/settings",
-      icon: <Settings className="w-5 h-5 mr-2 text-blue-500" />,
+      name: "Subscribers",
+      icon: <Mail className="w-5 h-5 mr-2 text-white opacity-70" />,
+      subNav: [
+        {
+          name: "View Subscribers",
+          href: "/dashboard/subscribers",
+          icon: <Users className="w-5 h-5 mr-2 text-white opacity-70" />,
+        },
+      ],
     },
   ];
 
@@ -116,67 +148,103 @@ const LawFirmAdminSidebar = () => {
 
         {/* Sidebar */}
         <div
-          className={`fixed top-0 left-0 h-full bg-gray-900 border-r border-gray-800 w-64 p-4 transition-transform duration-300 overflow-y-auto ${
+          className={`fixed top-0 left-0 h-full bg-gray-900 border-r border-gray-800 w-64 transition-transform duration-300 overflow-y-auto ${
             isOpen ? "translate-x-0" : "-translate-x-full"
           }`}
         >
           {/* Header */}
-          <div className="flex items-center justify-between mb-6 bg-yellow-500 px-4 py-3 rounded-lg">
-            <div className="text-2xl font-bold text-gray-900">Admin</div>
+          <div className="sticky top-0 z-10 bg-gray-900 pt-4 px-4 pb-2">
+            <div className="flex items-center justify-between bg-yellow-500 px-4 py-3 rounded-lg">
+              <div className="text-2xl font-bold text-gray-900">Admin</div>
+            </div>
           </div>
-          <nav className="flex-1 space-y-2">
-            {navigation.map((item) => (
-              <div key={item.name}>
-                <div
-                  className={`flex items-center justify-between px-4 py-2 rounded-lg text-white hover:bg-gray-700 transition-colors ${
-                    item.subNav ? "cursor-pointer" : ""
-                  }`}
-                  onClick={() => item.subNav && toggleNavExpansion(item.name)}
-                >
-                  <div className="flex items-center">
-                    {item.icon}
-                    <span>{item.name}</span>
-                  </div>
-                  {item.subNav && (
-                    <ChevronDown
-                      className={`w-5 h-5 transition-transform ${
-                        expandedNav[item.name] ? "rotate-180" : ""
+
+          {/* Navigation */}
+          <nav className="px-2 py-3">
+            <div className="space-y-1">
+              {navigation.map((item) => (
+                <div key={item.name} className="py-1">
+                  {item.href ? (
+                    <Link
+                      href={item.href}
+                      className={`flex items-center px-3 py-2.5 rounded-lg text-white hover:bg-gray-700 transition-colors group ${
+                        activeItem === item.name
+                          ? "bg-gray-700 border-l-4 border-yellow-500"
+                          : ""
                       }`}
-                    />
+                      onClick={() => setActiveItem(item.name)}
+                    >
+                      {item.icon}
+                      <span className="text-sm font-medium group-hover:text-white">
+                        {item.name}
+                      </span>
+                    </Link>
+                  ) : (
+                    <div>
+                      <div
+                        className={`flex items-center justify-between px-3 py-2.5 rounded-lg text-white hover:bg-gray-700 transition-colors cursor-pointer group ${
+                          expandedNav[item.name] ? "bg-gray-700" : ""
+                        }`}
+                        onClick={() => toggleNavExpansion(item.name)}
+                      >
+                        <div className="flex items-center">
+                          {item.icon}
+                          <span className="text-sm font-medium group-hover:text-white">
+                            {item.name}
+                          </span>
+                        </div>
+                        <ChevronDown
+                          className={`w-4 h-4 transition-transform text-white opacity-70 ${
+                            expandedNav[item.name] ? "rotate-180" : ""
+                          }`}
+                        />
+                      </div>
+                      {item.subNav && expandedNav[item.name] && (
+                        <div className="mt-1 ml-3 space-y-1">
+                          {item.subNav.map((subItem) => (
+                            <Link
+                              key={subItem.name}
+                              href={subItem.href}
+                              className={`flex items-center px-3 py-2 rounded-lg text-white hover:bg-gray-700 transition-colors group ${
+                                activeItem === subItem.name
+                                  ? "bg-gray-700 border-l-4 border-yellow-500"
+                                  : ""
+                              }`}
+                              onClick={() => setActiveItem(subItem.name)}
+                            >
+                              {subItem.icon}
+                              <span className="text-sm group-hover:text-white">
+                                {subItem.name}
+                              </span>
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   )}
                 </div>
-                {item.subNav && expandedNav[item.name] && (
-                  <div className="ml-4 space-y-1">
-                    {item.subNav.map((subItem) => (
-                      <Link
-                        key={subItem.name}
-                        href={subItem.href}
-                        className={`flex items-center px-4 py-2 rounded-lg text-white hover:bg-gray-700 transition-colors ${
-                          router.pathname === subItem.href ? "bg-gray-700" : ""
-                        }`}
-                      >
-                        {subItem.icon}
-                        <span>{subItem.name}</span>
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
+              ))}
+            </div>
           </nav>
 
           {/* Logout Button */}
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center justify-start px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700 mt-6"
-          >
-            <LogOut className="w-5 h-5 mr-2" />
-            Logout
-          </button>
+          <div className="sticky bottom-0 p-4 bg-gray-900 border-t border-gray-800">
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center justify-start px-4 py-2.5 bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-lg hover:from-yellow-600 hover:to-yellow-500 transition-all group shadow-md"
+            >
+              <LogOut className="w-5 h-5 mr-2 opacity-90" />
+              <span className="text-sm font-medium">Logout</span>
+            </button>
+          </div>
         </div>
 
         {/* Main content area */}
-        <div className="flex-1 p-6 ml-64">
+        <div
+          className={`flex-1 p-6 ${
+            isOpen ? "ml-64" : "ml-0"
+          } transition-all duration-300`}
+        >
           {/* Your main content goes here */}
         </div>
       </div>

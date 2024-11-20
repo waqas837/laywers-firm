@@ -9,6 +9,7 @@ const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 const BlogCreatePage = () => {
   const [formData, setFormData] = useState({
     title: "",
+    description: "",
     slug: "",
     content: "",
   });
@@ -33,6 +34,15 @@ const BlogCreatePage = () => {
       ...formData,
       title: newTitle,
       slug: generateSlug(newTitle),
+    });
+  };
+
+  // Handle title change and automatically generate slug
+  const handledescriptionChange = (e) => {
+    const description = e.target.value;
+    setFormData({
+      ...formData,
+      description,
     });
   };
 
@@ -72,7 +82,12 @@ const BlogCreatePage = () => {
 
   const handleSubmit = async () => {
     try {
-      if (!formData.title || !formData.slug || !formData.content) {
+      if (
+        !formData.title ||
+        !formData.description ||
+        !formData.slug ||
+        !formData.content
+      ) {
         alert("Title, slug, and content are required!");
         return;
       }
@@ -88,6 +103,7 @@ const BlogCreatePage = () => {
         "data",
         JSON.stringify({
           title: formData.title,
+          description: formData.description,
           slug: formData.slug,
           content: formData.content,
         })
@@ -116,7 +132,7 @@ const BlogCreatePage = () => {
       alert("Blog submitted successfully!");
 
       // Reset form
-      setFormData({ title: "", slug: "", content: "" });
+      setFormData({ title: "", slug: "", content: "", description: "" });
       setImage(null);
       setVideo(null);
       setImagePreview(null);
@@ -143,6 +159,18 @@ const BlogCreatePage = () => {
             value={formData.title}
             onChange={handleTitleChange}
             placeholder="Enter the blog title"
+          />
+        </div>
+        <div className="mb-4">
+          <label className="block text-gray-700 font-medium mb-2">
+            Description
+          </label>
+          <input
+            type="text"
+            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"
+            value={formData.description}
+            onChange={handledescriptionChange}
+            placeholder="Enter the blog meta description"
           />
         </div>
 

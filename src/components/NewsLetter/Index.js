@@ -1,22 +1,31 @@
 "use client";
 import { useState } from "react";
+import axios from "axios";
+import { strapiUrl } from "@/apis/apiUrl";
 
 function Newsletter() {
   const [email, setEmail] = useState("");
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Simulate an API call or form submission
-    setTimeout(() => {
+    try {
+      // POST the email to the Strapi API
+      await axios.post(`${strapiUrl}/email-lists`, {
+        data: { email },
+      });
+
       setIsSubscribed(true);
-      setIsSubmitting(false);
       setEmail("");
-    }, 2000);
+    } catch (error) {
+      console.error("Error subscribing:", error);
+      alert("There was an issue with the subscription. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

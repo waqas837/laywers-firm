@@ -76,23 +76,6 @@ function Blog() {
                   {post.attributes.description || "No description available"}
                 </p>
 
-                {/* Video preview if available */}
-                {post.attributes.video?.data?.[0] && (
-                  <div className="mb-4">
-                    <video
-                      controls
-                      className="w-full rounded-lg"
-                      style={{ maxHeight: "200px" }}
-                    >
-                      <source
-                        src={`${strapiUrlMedia}${post.attributes.video.data[0].attributes.url}`}
-                        type="video/mp4"
-                      />
-                      Your browser does not support the video tag.
-                    </video>
-                  </div>
-                )}
-
                 {/* Date */}
                 <p className="text-sm text-gray-600 mb-2">
                   Published:{" "}

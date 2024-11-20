@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import "react-quill/dist/quill.snow.css";
-import { strapiUrl } from "@/apis/apiUrl";
+import { strapiUrl, strapiUrlMedia } from "@/apis/apiUrl";
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 
 const BlogCreatePage = () => {
@@ -15,14 +15,17 @@ const BlogCreatePage = () => {
   const [video, setVideo] = useState(null);
   const [selectedBlog, setSelectedBlog] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [videoPreview, setVideoPreview] = useState(null);
 
   // Fetch blogs from API
   const fetchBlogs = async () => {
     try {
-      const response = await fetch(`${strapiUrl}/blogs`);
+      const response = await fetch(
+        `${strapiUrl}/blogs?populate=*&sort[0]=createdAt:desc`
+      );
       const data = await response.json();
-      console.log("data", data);
-      setBlogs(data.data); // Assuming `data.data` contains the blogs array
+      setBlogs(data.data);
     } catch (error) {
       console.error("Error fetching blogs:", error);
     } finally {
@@ -34,21 +37,28 @@ const BlogCreatePage = () => {
     fetchBlogs();
   }, []);
 
-  // Delete a blog
-  const handleDelete = async (id) => {
-    try {
-      const response = await fetch(`${apiUrl}/blogs/${id}`, {
-        method: "DELETE",
-      });
+  // Handle file uploads
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImage(file);
+      const reader = new FileReader();
+      reader.onload = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
-      if (!response.ok) {
-        throw new Error("Failed to delete blog");
-      }
-
-      alert("Blog deleted successfully!");
-      fetchBlogs(); // Refresh the list
-    } catch (error) {
-      console.error("Error deleting blog:", error);
+  const handleVideoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setVideo(file);
+      const reader = new FileReader();
+      reader.onload = () => {
+        setVideoPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -58,18 +68,68 @@ const BlogCreatePage = () => {
       alert("Title and content are required!");
       return;
     }
-
+    const token = localStorage.getItem("adminToken");
     try {
-      const formData = new FormData();
-      formData.append("title", title);
-      formData.append("content", content);
-      formData.append("description", description);
-      if (image) formData.append("image", image);
-      if (video) formData.append("video", video);
+      let updateData = {
+        data: {
+          title,
+          content,
+          description,
+        },
+      };
 
-      const response = await fetch(`${apiUrl}/blogs/${selectedBlog.id}`, {
+      // Only include file upload logic if new files are selected
+      if (image || video) {
+        const formData = new FormData();
+
+        // Handle image upload if new image is selected
+        if (image) {
+          formData.append("files", image);
+        }
+
+        // Handle video upload if new video is selected
+        if (video) {
+          formData.append("files", video);
+        }
+
+        // First upload the files if any
+        if (formData.has("files")) {
+          const uploadResponse = await fetch(`${strapiUrl}/upload`, {
+            method: "POST",
+            body: formData,
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          if (!uploadResponse.ok) {
+            throw new Error("Failed to upload files");
+          }
+
+          const uploadedFiles = await uploadResponse.json();
+
+          // Add file references to update data
+          if (image) {
+            updateData.data.image = uploadedFiles.find((file) =>
+              file.mime.startsWith("image/")
+            ).id;
+          }
+          if (video) {
+            updateData.data.video = uploadedFiles.find((file) =>
+              file.mime.startsWith("video/")
+            ).id;
+          }
+        }
+      }
+
+      // Update the blog
+      const response = await fetch(`${strapiUrl}/blogs/${selectedBlog.id}`, {
         method: "PUT",
-        body: formData,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updateData),
       });
 
       if (!response.ok) {
@@ -78,20 +138,56 @@ const BlogCreatePage = () => {
 
       alert("Blog updated successfully!");
       handleModalClose();
-      fetchBlogs(); // Refresh the list
+      fetchBlogs();
     } catch (error) {
       console.error("Error updating blog:", error);
+      alert("Failed to update blog. Please try again.");
+    }
+  };
+
+  // Delete a blog
+  const handleDelete = async (id) => {
+    if (window.confirm("Are you sure you want to delete this blog?")) {
+      const token = localStorage.getItem("adminToken");
+      try {
+        const response = await fetch(`${strapiUrl}/blogs/${id}`, {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to delete blog");
+        }
+
+        alert("Blog deleted successfully!");
+        fetchBlogs();
+      } catch (error) {
+        console.error("Error deleting blog:", error);
+        alert("Failed to delete blog. Please try again.");
+      }
     }
   };
 
   // Open the modal for editing
   const handleEdit = (blog) => {
     setSelectedBlog(blog);
-    setTitle(blog.title);
-    setContent(blog.content);
-    setDescription(blog.description);
+    setTitle(blog.attributes.title);
+    setContent(blog.attributes.content);
+    setDescription(blog.attributes.description);
     setImage(null);
     setVideo(null);
+    setImagePreview(
+      blog.attributes.image?.data?.[0]?.attributes?.url
+        ? `${strapiUrlMedia}${blog.attributes.image.data[0].attributes.url}`
+        : null
+    );
+    setVideoPreview(
+      blog.attributes.video?.data?.[0]?.attributes?.url
+        ? `${strapiUrlMedia}${blog.attributes.video.data[0].attributes.url}`
+        : null
+    );
     setIsModalOpen(true);
   };
 
@@ -104,6 +200,8 @@ const BlogCreatePage = () => {
     setDescription("");
     setImage(null);
     setVideo(null);
+    setImagePreview(null);
+    setVideoPreview(null);
   };
 
   if (isLoading) return <div>Loading...</div>;
@@ -119,6 +217,7 @@ const BlogCreatePage = () => {
               <th className="px-6 py-3 text-left text-gray-800">Title</th>
               <th className="px-6 py-3 text-left text-gray-800">Description</th>
               <th className="px-6 py-3 text-left text-gray-800">Image</th>
+              <th className="px-6 py-3 text-left text-gray-800">Video</th>
               <th className="px-6 py-3 text-left text-gray-800">Actions</th>
             </tr>
           </thead>
@@ -132,15 +231,24 @@ const BlogCreatePage = () => {
                   {blog.attributes.description}
                 </td>
                 <td className="px-6 py-4">
-                  {blog.attributes.image && (
+                  {blog.attributes.image?.data && (
                     <img
-                      src={blog.attributes.image}
+                      src={`${strapiUrlMedia}${blog.attributes.image.data[0].attributes.url}`}
                       alt={blog.attributes.title}
                       className="w-24 h-16 object-cover"
                     />
                   )}
                 </td>
-                <td className="px-6 py-4 flex justify-end space-x-4">
+                <td className="px-6 py-4">
+                  {blog.attributes.video?.data && (
+                    <video
+                      src={`${strapiUrlMedia}${blog.attributes.video.data[0].attributes.url}`}
+                      className="w-24 h-16 object-cover"
+                      controls
+                    />
+                  )}
+                </td>
+                <td className="px-6 py-4 flex justify-center items-center space-x-4">
                   <button
                     onClick={() => handleEdit(blog)}
                     className="text-blue-500 hover:text-blue-700"
@@ -200,6 +308,44 @@ const BlogCreatePage = () => {
                   onChange={setContent}
                   placeholder="Write your blog content here..."
                 />
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-gray-700 font-medium mb-2">
+                  Image
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="mb-2"
+                />
+                {imagePreview && (
+                  <img
+                    src={imagePreview}
+                    alt="Preview"
+                    className="w-32 h-24 object-cover rounded"
+                  />
+                )}
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-gray-700 font-medium mb-2">
+                  Video
+                </label>
+                <input
+                  type="file"
+                  accept="video/*"
+                  onChange={handleVideoChange}
+                  className="mb-2"
+                />
+                {videoPreview && (
+                  <video
+                    src={videoPreview}
+                    className="w-32 h-24 object-cover rounded"
+                    controls
+                  />
+                )}
               </div>
 
               <div className="flex justify-end">
