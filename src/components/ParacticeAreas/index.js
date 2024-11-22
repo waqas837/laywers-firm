@@ -74,14 +74,12 @@ const PracticeAreas = () => {
     try {
       setIsLoading(true);
       setError(null);
-      const token = localStorage.getItem("adminToken");
 
       const response = await fetch(
         `${strapiUrl}/paractice-areas?populate=*&pagination[limit]=3&sort[0]=createdAt:desc`,
         {
           method: "GET",
           headers: {
-            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
         }
@@ -102,7 +100,6 @@ const PracticeAreas = () => {
       setPracticeAreas(areas);
     } catch (error) {
       console.error("Error fetching practice areas:", error);
-      setError("Failed to load practice areas. Please try again later.");
     } finally {
       setIsLoading(false);
     }
