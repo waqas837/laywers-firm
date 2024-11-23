@@ -18,7 +18,10 @@ const Navbar = () => {
           !dropdownRefs.current[key].current.contains(event.target)
       );
 
-      if (clickedOutsideAll) {
+      // Check if the clicked element is a link
+      const clickedOnLink = event.target.tagName === "A";
+
+      if (clickedOutsideAll && !clickedOnLink) {
         setOpenDropdown(null);
       }
     };
@@ -35,38 +38,33 @@ const Navbar = () => {
     },
     {
       label: "Our Firm",
-      href: "#",
-      dropdown: [
-        { label: "Our Team", href: "#" },
-        { label: "History", href: "#" },
-        { label: "Values", href: "#" },
-      ],
+      href: "/team",
     },
     {
       label: "Estate Planning",
       href: "#",
       dropdown: [
-        { label: "Individual Planning", href: "#" },
-        { label: "Family Trusts", href: "#" },
-        { label: "Asset Protection", href: "#" },
+        { label: "Individual Planning", href: "/Individual-planning" },
+        { label: "Family Trusts", href: "/family-trust" },
+        { label: "Asset Protection", href: "/asset-protection" },
       ],
     },
     {
       label: "Probate Law",
       href: "#",
       dropdown: [
-        { label: "Estate Administration", href: "#" },
-        { label: "Will Contests", href: "#" },
-        { label: "Trust Litigation", href: "#" },
+        { label: "Estate Administration", href: "/estate-admin" },
+        { label: "Will Contests", href: "/will-contest" },
+        { label: "Trust Litigation", href: "/trust-litigation" },
       ],
     },
     {
       label: "Real Estate Law",
       href: "#",
       dropdown: [
-        { label: "Property Transactions", href: "#" },
-        { label: "Commercial Real Estate", href: "#" },
-        { label: "Residential Disputes", href: "#" },
+        { label: "Property Transactions", href: "/property-transactions" },
+        { label: "Commercial Real Estate", href: "/commercial-real-estate" },
+        { label: "Residential Disputes", href: "/residential-disputes" },
       ],
     },
     {
