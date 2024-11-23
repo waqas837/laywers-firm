@@ -33,7 +33,7 @@ const Navbar = () => {
   const navLinks = [
     {
       label: "Home",
-      href: "#",
+      href: "/",
       dropdown: null,
     },
     {
