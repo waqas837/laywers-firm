@@ -165,9 +165,9 @@ const Navbar = () => {
             className="w-12 h-12 rounded-full shadow-md"
           />
           <div className="text-center lg:text-left">
-            <h1 className="text-3xl font-semibold text-gray-700 tracking-wide">
+            <Link href={"/"} className="text-3xl font-semibold text-gray-700 tracking-wide">
               ¿Hablamos Español?
-            </h1>
+            </Link>
             <p className="text-md text-gray-500 italic">
               Turning today's goals into a lasting impact.
             </p>
