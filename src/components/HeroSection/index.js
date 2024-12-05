@@ -1,5 +1,5 @@
 "use client";
-import { CheckCircle, Loader } from "lucide-react";
+import { CheckCircle, Loader, XIcon } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import LawFirmLogos from "../CompanyNames";
 import Chatbot from "react-chatbot-kit";
@@ -10,9 +10,15 @@ import ActionProvider from "../ChatbotFiles/ActionProvider";
 import { MessageCircle } from "lucide-react";
 import { strapiUrl } from "@/apis/apiUrl";
 import toast, { Toaster } from "react-hot-toast";
+import axios from "axios";
+import { socketConn } from "@/lib/socketInstance";
 
 const WebsiteHeroSection = () => {
-  const [showChat, setShowChat] = useState(true);
+  const [showChat, setShowChat] = useState(false);
+  const [userName, setUserName] = useState("");
+  const [IsOpen, setIsOpen] = useState(false);
+  const [showChatInput, setShowChatInput] = useState(false);
+  const [isChatUserSubmitted, setIsChatUserSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     fullname: "",
@@ -20,6 +26,24 @@ const WebsiteHeroSection = () => {
     phone: "",
     issue: "",
   });
+  // Initialize socket connection
+  useEffect(() => {
+    let userid = localStorage.getItem("userid");
+    if (userid) {
+      setShowChatInput(false);
+      setIsOpen(false);
+      socketConn.emit("updateSocketId", { userid });
+    }
+  }, [socketConn]);
+
+  useEffect(() => {
+    let userid = localStorage.getItem("userid");
+    if (userid) {
+      setShowChatInput(false);
+      setIsOpen(false);
+      setIsChatUserSubmitted(true);
+    }
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => setLoading(false), 2000); // 2 seconds delay
@@ -48,7 +72,6 @@ const WebsiteHeroSection = () => {
       });
 
       const data = await response.json();
-      console.log("data ", data);
       if (data?.data?.id) {
         toast.success(
           "Your case review request has been submitted successfully!"
@@ -68,12 +91,43 @@ const WebsiteHeroSection = () => {
       setLoading(false);
     }
   };
+  // Generate the user id with socket id with api.
+  // And save to localstorage.
+  // /api/user-socket-connect
+  const handleChatUserSubmit = async (e) => {
+    try {
+      e.preventDefault();
+      if (userName.trim()) {
+        setIsChatUserSubmitted(true);
+        let { data } = await axios.post(`${strapiUrl}/user-socket-connect`, {
+          userName,
+        });
+        localStorage.setItem("userid", data.data.userid);
+        localStorage.setItem("socketid", data.data.socketId);
+        if (data.success) {
+          setShowChatInput(false);
+          setShowChat(true);
+        }
+      }
+    } catch (error) {
+      console.log("error in handleChatUserSubmit", error);
+    }
+  };
 
+  const showUser = () => {
+    if (!isChatUserSubmitted) {
+      setShowChatInput(true);
+      setShowChat(false);
+      setIsOpen(true);
+    } else {
+      setShowChat((prev) => !prev);
+    }
+  };
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 py-20 px-8 relative">
       {/* Fixed Chatbot at Bottom Right */}
       <Toaster />
-      <div className="fixed bottom-4 right-4">
+      <div className="fixed bottom-3 right-3 z-50">
         {loading ? (
           <div
             style={{
@@ -91,7 +145,59 @@ const WebsiteHeroSection = () => {
           </div>
         ) : (
           <>
-            {showChat && (
+            {showChatInput && IsOpen && (
+              <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-2xl p-8 w-96 border border-gray-100">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="relative">
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-full blur opacity-25"></div>
+                    <div className="relative p-3 bg-white rounded-full shadow-lg">
+                      <img
+                        src="/logo.webp"
+                        alt="Logo"
+                        className="w-14 h-14 rounded-full object-cover"
+                      />
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setIsOpen(false)}
+                    className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-all duration-200"
+                  >
+                    <XIcon className="h-5 w-5" />
+                  </button>
+                </div>
+
+                <h3 className="text-2xl font-bold text-gray-800 mb-6 text-center">
+                  Welcome to Chat
+                </h3>
+
+                <form onSubmit={handleChatUserSubmit} className="space-y-5">
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={userName}
+                      onChange={(e) => setUserName(e.target.value)}
+                      placeholder="Enter your name"
+                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all duration-200 bg-white"
+                      required
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full bg-yellow-500 hover:bg-yellow-600 text-white py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2 font-medium shadow-md hover:shadow-lg"
+                  >
+                    <span>Start Chat</span>
+                    <CheckCircle className="h-5 w-5 opacity-90" />
+                  </button>
+                </form>
+
+                <p className="text-sm text-gray-500 text-center mt-6">
+                  We are here to help you! Feel free to reach out with any
+                  questions.
+                </p>
+              </div>
+            )}
+            {showChat && isChatUserSubmitted && (
               <Chatbot
                 config={{
                   ...config,
@@ -109,7 +215,7 @@ const WebsiteHeroSection = () => {
             )}
             {!showChat && (
               <button
-                onClick={() => setShowChat((prev) => !prev)}
+                onClick={() => showUser()}
                 style={{
                   position: "fixed",
                   bottom: "20px",

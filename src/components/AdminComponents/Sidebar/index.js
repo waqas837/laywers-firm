@@ -13,8 +13,10 @@ import {
   Trash,
   LogOut,
   Mail,
+  MessageSquareMore,
 } from "lucide-react";
 import Link from "next/link";
+import { socketConn } from "@/lib/socketInstance";
 
 const LawFirmAdminSidebar = () => {
   const router = useRouter();
@@ -22,6 +24,12 @@ const LawFirmAdminSidebar = () => {
   const [isOpen, setIsOpen] = useState(true);
   const [expandedNav, setExpandedNav] = useState({});
   const [activeItem, setActiveItem] = useState("");
+
+  useEffect(() => {
+    if (socketConn) {
+      socketConn.emit("adminSocketId", { message: "submit admin socket id" });
+    }
+  }, [socketConn]);
 
   useEffect(() => {
     const findActiveItem = () => {
@@ -65,8 +73,15 @@ const LawFirmAdminSidebar = () => {
   const navigation = [
     {
       name: "Dashboard",
-      href: "/admin",
+      href: "/dashboard",
       icon: <Home className="w-5 h-5 mr-2 text-white opacity-70" />,
+    },
+    {
+      name: "Live Chat Help",
+      href: "/dashboard/help-chat-center",
+      icon: (
+        <MessageSquareMore className="w-5 h-5 mr-2 text-white opacity-70" />
+      ),
     },
     {
       name: "Blogs",

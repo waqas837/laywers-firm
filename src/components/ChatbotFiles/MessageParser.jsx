@@ -1,10 +1,26 @@
 // in MessageParser.js
+import { strapiUrl } from "@/apis/apiUrl";
+import { socketConn } from "@/lib/socketInstance";
+import axios from "axios";
 import React from "react";
 
 const MessageParser = ({ children, actions }) => {
-  const parse = (message) => {
-    if (message.includes("hello")) {
-      actions.handleHello();
+  let userid = localStorage.getItem("userid");
+  const parse = async (message) => {
+    let UserWantsHelp = localStorage.getItem("UserWantsHelp");
+    if (!UserWantsHelp) {
+      let { data } = await axios.get(
+        `${strapiUrl}/chatbot-msgs?query=${message}`
+      );
+      if (data.answer) {
+        actions.handleHello(data.answer);
+      } else if (!data.answer) {
+        actions.handleHello(
+          "Sorry! I can't understand the query. Do you want to talk with live agent?"
+        );
+      }
+    } else {
+      socketConn.emit("UserWantsHelp", { msg: message, userid });
     }
   };
 

@@ -12,7 +12,7 @@ import Threesteps from "@/components/Threesteps/index";
 
 const Home = () => {
   return (
-    <div>
+    <>
       <HeroSection />
       <Carousel />
       <VerdictsSettlements />
@@ -23,7 +23,7 @@ const Home = () => {
       <Blog />
       <Threesteps />
       <Newsletter />
-    </div>
+    </>
   );
 };
 
