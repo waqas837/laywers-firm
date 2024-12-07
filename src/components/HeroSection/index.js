@@ -1,5 +1,5 @@
 "use client";
-import { CheckCircle, Loader, XIcon } from "lucide-react";
+import { CheckCircle, Loader } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import LawFirmLogos from "../CompanyNames";
 import Chatbot from "react-chatbot-kit";
@@ -12,10 +12,10 @@ import { strapiUrl } from "@/apis/apiUrl";
 import toast, { Toaster } from "react-hot-toast";
 import axios from "axios";
 import { socketConn } from "@/lib/socketInstance";
+import BasicUserInfo from "@/components/ChatBotElements/BasicUserInfo";
 
 const WebsiteHeroSection = () => {
   const [showChat, setShowChat] = useState(false);
-  const [userName, setUserName] = useState("");
   const [IsOpen, setIsOpen] = useState(false);
   const [showChatInput, setShowChatInput] = useState(false);
   const [isChatUserSubmitted, setIsChatUserSubmitted] = useState(false);
@@ -24,6 +24,13 @@ const WebsiteHeroSection = () => {
     fullname: "",
     email: "",
     phone: "",
+    issue: "",
+  });
+  const [formDatachat, setFormDatachat] = useState({
+    userName: "",
+    address: "",
+    phone: "",
+    email: "",
     issue: "",
   });
   // Initialize socket connection
@@ -97,17 +104,15 @@ const WebsiteHeroSection = () => {
   const handleChatUserSubmit = async (e) => {
     try {
       e.preventDefault();
-      if (userName.trim()) {
-        setIsChatUserSubmitted(true);
-        let { data } = await axios.post(`${strapiUrl}/user-socket-connect`, {
-          userName,
-        });
-        localStorage.setItem("userid", data.data.userid);
-        localStorage.setItem("socketid", data.data.socketId);
-        if (data.success) {
-          setShowChatInput(false);
-          setShowChat(true);
-        }
+      setIsChatUserSubmitted(true);
+      let { data } = await axios.post(`${strapiUrl}/user-socket-connect`, {
+        formDatachat,
+      });
+      localStorage.setItem("userid", data.data.userid);
+      localStorage.setItem("socketid", data.data.socketId);
+      if (data.success) {
+        setShowChatInput(false);
+        setShowChat(true);
       }
     } catch (error) {
       console.log("error in handleChatUserSubmit", error);
@@ -146,56 +151,12 @@ const WebsiteHeroSection = () => {
         ) : (
           <>
             {showChatInput && IsOpen && (
-              <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-2xl p-8 w-96 border border-gray-100">
-                <div className="flex items-center justify-between mb-6">
-                  <div className="relative">
-                    <div className="absolute -inset-0.5 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-full blur opacity-25"></div>
-                    <div className="relative p-3 bg-white rounded-full shadow-lg">
-                      <img
-                        src="/logo.webp"
-                        alt="Logo"
-                        className="w-14 h-14 rounded-full object-cover"
-                      />
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => setIsOpen(false)}
-                    className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-all duration-200"
-                  >
-                    <XIcon className="h-5 w-5" />
-                  </button>
-                </div>
-
-                <h3 className="text-2xl font-bold text-gray-800 mb-6 text-center">
-                  Welcome to Chat
-                </h3>
-
-                <form onSubmit={handleChatUserSubmit} className="space-y-5">
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={userName}
-                      onChange={(e) => setUserName(e.target.value)}
-                      placeholder="Enter your name"
-                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all duration-200 bg-white"
-                      required
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    className="w-full bg-yellow-500 hover:bg-yellow-600 text-white py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2 font-medium shadow-md hover:shadow-lg"
-                  >
-                    <span>Start Chat</span>
-                    <CheckCircle className="h-5 w-5 opacity-90" />
-                  </button>
-                </form>
-
-                <p className="text-sm text-gray-500 text-center mt-6">
-                  We are here to help you! Feel free to reach out with any
-                  questions.
-                </p>
-              </div>
+              <BasicUserInfo
+                setIsOpen={setIsOpen}
+                handleChatUserSubmit={handleChatUserSubmit}
+                setFormDatachat={setFormDatachat}
+                formDatachat={formDatachat}
+              />
             )}
             {showChat && isChatUserSubmitted && (
               <Chatbot

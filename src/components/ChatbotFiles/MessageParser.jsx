@@ -1,8 +1,8 @@
 // in MessageParser.js
+import React from "react";
 import { strapiUrl } from "@/apis/apiUrl";
 import { socketConn } from "@/lib/socketInstance";
 import axios from "axios";
-import React from "react";
 
 const MessageParser = ({ children, actions }) => {
   let userid = localStorage.getItem("userid");
