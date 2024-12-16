@@ -108,8 +108,12 @@ const WebsiteHeroSection = () => {
       let { data } = await axios.post(`${strapiUrl}/user-socket-connect`, {
         formDatachat,
       });
+      localStorage.setItem("username", data.data.userName);
       localStorage.setItem("userid", data.data.userid);
       localStorage.setItem("socketid", data.data.socketId);
+      localStorage.setItem("phone", data.data.phone);
+      localStorage.setItem("email", data.data.email);
+      localStorage.setItem("address", data.data.address);
       if (data.success) {
         setShowChatInput(false);
         setShowChat(true);

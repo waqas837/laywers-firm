@@ -48,7 +48,9 @@ const ActionProvider = ({
   const handleHello = (botAnswer) => {
     if (
       botAnswer ===
-      "Sorry! I can't understand the query. Do you want to talk with live agent?"
+        "Sorry! I can't understand the query. Do you want to talk with live agent?" ||
+      botAnswer ===
+        "Your query doesn't fit into a specific category we handle. Please provide more information or contact us directly for assistance."
     ) {
       const botMessage = createChatBotMessage(
         <LiveAgentOption
