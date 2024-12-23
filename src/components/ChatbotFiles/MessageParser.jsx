@@ -51,6 +51,7 @@ const MessageParser = ({ children, actions }) => {
           actions.handleHello(
             "Thank you! That's all the information we needed."
           );
+          // send email this chat as a transcript.
         }
       } else {
         let { data } = await axios.get(
