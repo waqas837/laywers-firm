@@ -26,7 +26,7 @@ const TeamPage = () => {
           },
         }
       );
-      console.log(data.data); // Debug: Check the API response
+      // console.log(data.data); // Debug: Check the API response
       setTeams(data.data); // Adjustif the response structure differs
     } catch (error) {
       console.error("Error fetching teams:", error);
@@ -92,7 +92,7 @@ const TeamPage = () => {
       if (imageId) {
         updateData.data.profileimg = imageId;
       }
-     console.log("updateData", updateData)
+    //  console.log("updateData", updateData)
       // Update the team data
       const response = await fetch(`${STRAPI_URL}/${selectedTeam.id}`, {
         method: "PUT",

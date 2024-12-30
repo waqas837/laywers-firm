@@ -12,7 +12,7 @@ const Chat = () => {
   // Initialize socket connection
   useEffect(() => {
     setSocket(socketConn);
-    console.log("socketConn", socketConn);
+    // console.log("socketConn", socketConn);
     socketConn.on("message", (data) => {
       // console.log("message", data);
       setuserid(data.userid);

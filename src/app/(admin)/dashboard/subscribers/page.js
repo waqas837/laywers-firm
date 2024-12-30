@@ -15,7 +15,7 @@ const Page = () => {
             Authorization: `Bearer ${adminToken}`,
           },
         });
-        console.log("response.data.data", response.data.data)
+        // console.log("response.data.data", response.data.data)
         setEmails(response.data.data);
       } catch (error) {
         console.error("Error fetching emails:", error);

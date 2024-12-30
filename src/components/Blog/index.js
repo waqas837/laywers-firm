@@ -22,7 +22,7 @@ function Blog() {
           `${strapiUrl}/blogs?populate=*&pagination[limit]=3&sort[0]=createdAt:desc`
         );
         const data = await response.json();
-        console.log("Fetched data:", data);
+        // console.log("Fetched data:", data);
         setBlogPosts(data.data);
       } catch (error) {
         console.error("Error fetching blogs:", error);

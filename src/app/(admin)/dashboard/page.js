@@ -35,7 +35,7 @@ const AdminPanelHome = () => {
       }
 
       const data = await response.json();
-      console.log(">>>", data.data);
+      // console.log(">>>", data.data);
       setRequestData(data.data);
     } catch (err) {
       setError(err.message);

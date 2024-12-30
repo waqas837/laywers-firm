@@ -2,12 +2,12 @@ import React, { useState } from "react";
 import axios from "axios";
 import { strapiUrl } from "@/apis/apiUrl";
 import { socketConn } from "@/lib/socketInstance";
+let transcript = [];
 
 const MessageParser = ({ children, actions }) => {
   let userid = localStorage.getItem("userid");
   const [questionQueue, setQuestionQueue] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-
   const parse = async (message) => {
     let UserWantsHelp = localStorage.getItem("UserWantsHelp");
     let username = localStorage.getItem("username");
@@ -29,6 +29,8 @@ const MessageParser = ({ children, actions }) => {
           email,
           address,
         };
+        transcript.push(QuestionsAnswers);
+
         let { data } = await axios.post(
           `${strapiUrl}/save-bot-user-messages`,
           {
@@ -52,6 +54,9 @@ const MessageParser = ({ children, actions }) => {
             "Thank you! That's all the information we needed."
           );
           // send email this chat as a transcript.
+          await axios.post(`${strapiUrl}/send-email`, {
+            data: transcript,
+          });
         }
       } else {
         let { data } = await axios.get(
